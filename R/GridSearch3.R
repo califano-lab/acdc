@@ -1,4 +1,4 @@
-#' GridSearch
+#' GridSearch2
 #' Computes the optimal combination of k and resolution for
 #' clustering, by grid-search optimization of the Silhouette score across multiple
 #' resamplings
@@ -29,20 +29,19 @@
 #' \code{random.seed}: random seed used to initialize the rng for cell subsamplings. Values are the same as \code{index}.
 #'
 #' @export
-GridSearch <- function(object,
-                               assay.name,
-                               .resolutions=seq(0.01,2,by = 0.01),
-                               .bootstraps=1,
-                               .knns=seq(3,31,by = 2),
-                               .pct_cells=100,
-                               .replace=FALSE,
-                               .clust_alg="Louvain",
-                               free.cores=2,
-                               my_seed=0)
+GridSearch2 <- function(object,
+                       assay.name,
+                       .resolutions=seq(0.01,2,by = 0.01),
+                       .bootstraps=1,
+                       .knns=seq(3,31,by = 2),
+                       .pct_cells=100,
+                       .replace=FALSE,
+                       .clust_alg="Louvain",
+                       free.cores=2,
+                       my_seed=0)
+{
 
-  {
-
-  ## Silhouette Analysis ----
+  ## Grid Search ----
   print("Selection of parameters for optimal clustering solution")
 
   {
@@ -62,56 +61,56 @@ GridSearch <- function(object,
 
 
     .clust_alg = switch(.clust_alg,
-           "Louvain"= 1,
-           "Louvain-mult-ref"=2,
-           "SLM"=3,
-           "Leiden"=4)
+                        "Louvain"= 1,
+                        "Louvain-mult-ref"=2,
+                        "SLM"=3,
+                        "Leiden"=4)
 
 
-    print(system.time({
-      result <- foreach::foreach( a_res = .resolutions, .combine = 'rbind' ) %dopar% {
-        knn = rep( .knns , length(.bootstraps) )
-        bootstrap = rep( .bootstraps, length(.knns) )
-        index <- 1:length(knn)
+     print(system.time({
+    result <- foreach::foreach( a_knn = .knns, .combine = 'rbind' ) %dopar% {
+        resolution = rep( .resolutions, length(.bootstraps) )
+        bootstrap = rep( .bootstraps, length(.resolutions) )
+        index <- 1:length(resolution)
         my_sil.df <- dplyr::tibble( index = index,
-                             bootstrap = bootstrap, knn = knn, resolution = 0,
-                             tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
-                             sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
+                                    bootstrap = bootstrap, knn = 0, resolution = resolution,
+                                    tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
+                                    sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
         nrow(my_sil.df)
+        selected_samples <- sample(colnames(object),size=n_cells_to_subsample,replace=.replace)
+        seurat_obj <- object[ , colnames(object) %in% selected_samples ]
+        # x.dist <- as.matrix(vpdist)[selected_samples,selected_samples]
+        # x.dist <- as.matrix(as.dist( 1-cor( x@assays$VIPER@scale.data ,
+        #                                     method = “spe” )))
+        # x.dist <- as.dist(viperSimilarity(x@assays$VIPER@scale.data)) %>% as.matrix()
+        x.dist <- as.matrix(as.dist( 1-cor( seurat_obj[[assay.name]]@scale.data,method = "pea" )))
+        my_ssn_graph <- Seurat::FindNeighbors( x.dist,
+                                               # dims = pcs_to_use,
+                                               # assay = “VIPER”,
+                                               distance.matrix = TRUE,
+                                               verbose = TRUE,
+                                               # k.param = knn_n_neighbor,
+                                               k.param = a_knn,
+                                               # annoy.metric = “cosine”,
+                                               annoy.metric = "euclidean",
+                                               compute.SNN = TRUE )
+        seurat_obj@graphs <- my_ssn_graph
         for ( a_index in my_sil.df$index )
         {
           set.seed(a_index)
           my_sil.df$random.seed[a_index] <- a_index
-          print(paste0("--- Silhouette score computation resolution/bootstrap : ", a_res , "|" , my_sil.df$bootstrap[a_index] ))
-          selected_samples <- sample(colnames(object),size=n_cells_to_subsample,replace=.replace)
-          x <- object[ , colnames(object) %in% selected_samples ]
-          # x.dist <- as.matrix(vpdist)[selected_samples,selected_samples]
-          # x.dist <- as.matrix(as.dist( 1-cor( x@assays$VIPER@scale.data ,
-          #                                     method = “spe” )))
-          # x.dist <- as.dist(viperSimilarity(x@assays$VIPER@scale.data)) %>% as.matrix()
-          x.dist <- as.matrix(as.dist( 1-cor( x[[assay.name]]@scale.data,method = "pea" )))
-          my_ssn_graph <- Seurat::FindNeighbors( x.dist ,
-                                         # dims = pcs_to_use ,
-                                         # assay = “VIPER” ,
-                                         distance.matrix = TRUE ,
-                                         verbose = TRUE ,
-                                         # k.param = knn_n_neighbor ,
-                                         k.param = my_sil.df$knn[a_index] ,
-                                         # annoy.metric = “cosine” ,
-                                         annoy.metric = "euclidean" ,
-                                         compute.SNN = TRUE )
-          x@graphs <- my_ssn_graph
-          x <- Seurat::FindClusters( x,
-                             graph.name = "snn",
-                             resolution = a_res,
-                             verbose = FALSE,
-                             modularity.fxn = 1,
-                             algorithm = .clust_alg,
-                             random.seed = my_seed
+          print(paste0("--- Silhouette score computation knn/bootstrap : ", a_knn , "|" , my_sil.df$bootstrap[a_index] ))
+          seurat_obj <- Seurat::FindClusters( seurat_obj,
+                                     graph.name = "snn",
+                                     resolution = my_sil.df$resolution[a_index],
+                                     verbose = FALSE,
+                                     modularity.fxn = 1,
+                                     algorithm = .clust_alg,
+                                     random.seed = my_seed
           )
-          table(x$seurat_clusters)
-          if ( nlevels(x$seurat_clusters) == 1 ) next ;
-          s <- cluster::silhouette( as.integer(x$seurat_clusters) , x.dist )
+          table(seurat_obj$seurat_clusters)
+          if ( nlevels(seurat_obj$seurat_clusters) == 1 ) next ;
+          s <- cluster::silhouette( as.integer(seurat_obj$seurat_clusters) , x.dist )
           # pdf( file.path(reports.dir,paste0(“sil-res-“,a_res,“.pdf”)) )
           x <- factoextra::fviz_silhouette(s,print.summary = FALSE)
           y <- sapply( levels(x$data$cluster) , function(i) mean( x$data$sil_width[ x$data$cluster == i ] ) )
@@ -126,7 +125,7 @@ GridSearch <- function(object,
           # dev.off()
           # View(my_sil.df)
         }
-        my_sil.df$resolution = a_res
+        my_sil.df$knn = a_knn
         return(my_sil.df)
       } # End of dopar
     })) # End of print
