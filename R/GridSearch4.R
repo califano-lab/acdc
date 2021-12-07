@@ -1,4 +1,4 @@
-#' GridSearch2
+#' GridSearch4
 #' Computes the optimal combination of k and resolution for
 #' clustering, by grid-search optimization of the Silhouette score across multiple
 #' resamplings
@@ -29,7 +29,7 @@
 #' \code{random.seed}: random seed used to initialize the rng for cell subsamplings. Values are the same as \code{index}.
 #'
 #' @export
-GridSearch2 <- function(object,
+GridSearch4 <- function(object,
                        assay.name,
                        .resolutions=seq(0.01,2,by = 0.01),
                        .bootstraps=1,
@@ -106,7 +106,7 @@ GridSearch2 <- function(object,
                                      verbose = FALSE,
                                      modularity.fxn = 1,
                                      algorithm = .clust_alg,
-                                     random.seed = my_seed
+                                     random.seed = a_index
           )
           table(seurat_obj$seurat_clusters)
           if ( nlevels(seurat_obj$seurat_clusters) == 1 ) next ;
