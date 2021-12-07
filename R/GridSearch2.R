@@ -69,7 +69,7 @@ GridSearch2 <- function(object,
 
      print(system.time({
     result <- foreach::foreach( a_knn = .knns, .combine = 'rbind' ) %dopar% {
-        resolution = rep( .resolutions, length(.bootstraps) )
+        resolution = rep( .resolutions, each=length(.bootstraps) )
         bootstrap = rep( .bootstraps, length(.resolutions) )
         index <- 1:length(resolution)
         my_sil.df <- dplyr::tibble( index = index,
