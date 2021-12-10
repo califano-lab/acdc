@@ -67,7 +67,7 @@ GridSearch4 <- function(object,
                         "Leiden"=4)
 
 
-     print(system.time({
+    print(system.time({
     result <- foreach::foreach( a_knn = .knns, .combine = 'rbind' ) %dopar% {
         resolution = rep( .resolutions, each=length(.bootstraps) )
         bootstrap = rep( .bootstraps, length(.resolutions) )
