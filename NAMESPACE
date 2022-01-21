@@ -3,3 +3,4 @@
 export(GridSearch)
 export(GridSearch4)
 export(GridSearch_pcs)
+export(GridSearch_pcs_HPC)
