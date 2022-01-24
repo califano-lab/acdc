@@ -268,9 +268,12 @@ obj <- function(x, d,S.obj,NN_range, assay.name, clust_alg, type.fun){
            obj.fn <- sapply( unique(s[,"cluster"]), 
                              function(i) mean( s[ s[,1]==i ,"sil_width"] ) )
            obj.fn <- mean(obj.fn)
-           
          },
-         "group.median.silhouette"={})
+         "group.median.silhouette"={
+           obj.fn <- sapply( unique(s[,"cluster"]), 
+                             function(i) median( s[ s[,1]==i ,"sil_width"] ) )
+           obj.fn <- mean(obj.fn)
+         })
   
 
       
