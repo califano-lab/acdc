@@ -24,7 +24,7 @@ dimension <- 2
 lower <- rep(-5.12, dimension)
 upper <- rep(5.12, dimension)
 set.seed(1234)
-x.ini <- lower + runif(length(lower)) * (upper - lower)
+x.ini <- lower-1 + runif(length(lower)) * (upper - lower)
 expected.val <- 0
 absTol <- 1e-13
 fn.call <- 0
@@ -130,7 +130,6 @@ switch(Computer,
 
 
 
-
          CodesFolder <- paste0("/ifs/scratch/c2b2/ac_lab/lz2841/")
          ScratchFolder <- CodesFolder
        }
@@ -151,7 +150,7 @@ DefaultAssay(S.obj) <- "Viper"
 
 NN_range <- c(3,30) # min, max number of NN
 
-par <- c(0.01,NN_range[1]/NN_range[2]) # resolution, kNN: initial values
+par <- c(0.011,3.1/NN_range[2]) # resolution, kNN: initial values
 lower <- c(0.01, NN_range[1]/NN_range[2]) # LB: resolution, normalized num NN 
 upper <- c(2,NN_range[2]/NN_range[2]) # UB
 
@@ -161,12 +160,13 @@ expected.val <- -1
 absTol <- 1e-6
 
 cat("Modify optimization parameters, especially temperature (not included here).\n")
-control <- list(
-  # maxit=5000, # max number iterations
-  threshold.stop = expected.val + absTol, # 1 (worst) -1 (best) silhouette
+control <- list(maxit=5000, # max number iterations
+  #threshold.stop = expected.val + absTol, # 1 (worst) -1 (best) silhouette
+  simple.function=FALSE,
+  verbose=TRUE,
   smooth=FALSE, # smoothness objective function
   max.call=1e7, # max calls objective function
-  max.time=3600 # (s) max running time - 1 h
+  max.time=300 # (s) max running time - 1 h
 )
 
 
@@ -198,17 +198,16 @@ type.fun <- "mean.silhouette" # "mean.silhouette" "median.silhouette" "group.mea
 
 
 
-
-
 ##### Call GenSA
 set.seed(1234)
 fn.call <<- 0
 
 out.GenSA <- GenSA(fn=obj,
-                   par=par
+                   par=NULL,
                    lower=lower,
                    upper=upper,
-                   control = control)
+                   control = control,
+                   d, S.obj,NN_range, assay.name, clust_alg, type.fun) # other parameters
 
 
 
@@ -216,76 +215,86 @@ out.GenSA <- GenSA(fn=obj,
 cat("Make also case for PCA-based obj.fn.\n Should you also add a require for Seurat and cluster and factoextra within obj?\n",
     "Clust alg for the moment is just Louvain, either remove it or consider adding many more.\n",
     "Also consider passing the parameter random.seed=some number in FindClusters.\n",
-    "Also be careful with the line with 'return'.\n")
+    "Also set control options, especially temperature and stopping conditions")
 
-obj <- function(x, d,S.obj,NN_range, assay.name, clust_alg, type.fun){
+obj <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
 
   
-  # first argument: x are the parameters SA is optimizing over
-  # first element in x is resolution value, second element is num NN
-  # additional aguments: additional parameters needed for computation
+    # first argument: x are the parameters SA is optimizing over
+    # first element in x is resolution value, second element is num NN
+    # additional aguments: additional parameters needed for computation
     # d = distance matrix
     # S.obj = Seurat object
     # min and max number of NNs
     # assay.name = perhaps needed for PCA-based clustering
     # clust_alg=Louvain, Leiden etc
-    # obj.fun=for the switch case statement
+    # type.fn=for the switch case statement
   
   fn.call <<- fn.call + 1
   
-  x[2] <- floor(x[2]*NN_range[2])
-  
-  
-  
+  NN <- as.integer(floor(x[2]*NN_range[2]))
+   
+
+  suppressWarnings(
   S.obj@graphs <- Seurat::FindNeighbors(d,
                                     distance.matrix = TRUE,
-                                    verbose = TRUE,
-                                    k.param = x[2],
+                                    verbose = FALSE,
+                                    k.param = NN,
                                     annoy.metric = "euclidean",
                                     #dims=NULL,
                                     #assay=assay.name,
                                     compute.SNN = TRUE)
-  
-  
+    )
+
   names(S.obj@graphs) <- c("nn","snn")
-  
+
+  suppressWarnings(
   S.obj <- Seurat::FindClusters(S.obj,
                                 graph.name="snn",
                                 resolution=x[1],
                                 verbose=FALSE,
                                 modularity.fxn=1,
                                 algorithm=clust_alg)
+  )
   
-  if (nlevels(S.obj$seurat_clusters) == 1) next
+
+  if (nlevels(S.obj$seurat_clusters) == 1) {return(1)}
+  
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters) , d)
-  
-  
+
   obj.fn <- switch(type.fun,
          "mean.silhouette"={
+           obj.fn <- mean(s[,"sil_width"])
          },
-         "median.silhouette"={},
+         "median.silhouette"={
+           obj.fn <- median(s[,"sil_width"])
+         },
          "group.mean.silhouette"={
-           obj.fn <- sapply( unique(s[,"cluster"]), 
+           obj.fn <- sapply( unique(s[,"cluster"]),
                              function(i) mean( s[ s[,1]==i ,"sil_width"] ) )
            obj.fn <- mean(obj.fn)
          },
          "group.median.silhouette"={
-           obj.fn <- sapply( unique(s[,"cluster"]), 
+           obj.fn <- sapply( unique(s[,"cluster"]),
                              function(i) median( s[ s[,1]==i ,"sil_width"] ) )
            obj.fn <- mean(obj.fn)
          })
+
   
-
-      
-
-}
-
-
-
-
-
-silhouette.fn <- function(){
+  if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
+  
+  
+  obj.fn <- -obj.fn # - (obj.fn) for optimization
+  
+  print(obj.fn)
+  
+  return(obj.fn)
 
 }
+
+
+
+
+
 
 
