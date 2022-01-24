@@ -96,7 +96,7 @@ rbind(tickers, round(100 * wstar.GenSA, 2))
 
 ######
 # Preparing folders
-Computer <- "Dell_Xps15" #Dell_Xps15" # "iMac # "CentOS"
+Computer <- "iMac" #Dell_Xps15" # "iMac # "CentOS"
 
 switch(Computer,
        "Dell_Xps15"={
@@ -145,11 +145,17 @@ p_num <- 5 # to test
 Viper_f <- paste0(ScratchFolder,"NEPCPatients/Viper_analysis/P",p_num,"/")
 S.obj <- readRDS(paste0(Viper_f,"Tumor_viper_P",p_num,"_epithelial.rds"))
 
+DefaultAssay(S.obj) <- "Viper"
+
 #### GenSA options
 
-par <- c(0.01,3) # resolution, kNN: initial values
-lower <- c(0.01, 3)) # LB
-upper <- c(2,31) # UB
+NN_range <- c(3,30) # min, max number of NN
+
+par <- c(0.01,NN_range[1]/NN_range[2]) # resolution, kNN: initial values
+lower <- c(0.01, NN_range[1]/NN_range[2]) # LB: resolution, normalized num NN 
+upper <- c(2,NN_range[2]/NN_range[2]) # UB
+
+clust_alg <- 1 # for original Louvain algorithm
 
 expected.val <- -1
 absTol <- 1e-6
@@ -188,6 +194,10 @@ if (cells.dims == 1){
 
 
 
+type.fun <- "mean.silhouette" # "mean.silhouette" "median.silhouette" "group.mean.silhouette" "group.median.silhouette"
+
+
+
 
 
 ##### Call GenSA
@@ -203,13 +213,67 @@ out.GenSA <- GenSA(fn=obj,
 
 
 
+cat("Make also case for PCA-based obj.fn.\n Should you also add a require for Seurat and cluster and factoextra within obj?\n",
+    "Clust alg for the moment is just Louvain, either remove it or consider adding many more.\n",
+    "Also consider passing the parameter random.seed=some number in FindClusters.\n",
+    "Also be careful with the line with 'return'.\n")
 
+obj <- function(x, d,S.obj,NN_range, assay.name, clust_alg, type.fun){
 
+  
+  # first argument: x are the parameters SA is optimizing over
+  # first element in x is resolution value, second element is num NN
+  # additional aguments: additional parameters needed for computation
+    # d = distance matrix
+    # S.obj = Seurat object
+    # min and max number of NNs
+    # assay.name = perhaps needed for PCA-based clustering
+    # clust_alg=Louvain, Leiden etc
+    # obj.fun=for the switch case statement
+  
+  fn.call <<- fn.call + 1
+  
+  x[2] <- floor(x[2]*NN_range[2])
+  
+  
+  
+  S.obj@graphs <- Seurat::FindNeighbors(d,
+                                    distance.matrix = TRUE,
+                                    verbose = TRUE,
+                                    k.param = x[2],
+                                    annoy.metric = "euclidean",
+                                    #dims=NULL,
+                                    #assay=assay.name,
+                                    compute.SNN = TRUE)
+  
+  
+  names(S.obj@graphs) <- c("nn","snn")
+  
+  S.obj <- Seurat::FindClusters(S.obj,
+                                graph.name="snn",
+                                resolution=x[1],
+                                verbose=FALSE,
+                                modularity.fxn=1,
+                                algorithm=clust_alg)
+  
+  if (nlevels(S.obj$seurat_clusters) == 1) next
+  s <- cluster::silhouette( as.integer(S.obj$seurat_clusters) , d)
+  
+  
+  obj.fn <- switch(type.fun,
+         "mean.silhouette"={
+         },
+         "median.silhouette"={},
+         "group.mean.silhouette"={
+           obj.fn <- sapply( unique(s[,"cluster"]), 
+                             function(i) mean( s[ s[,1]==i ,"sil_width"] ) )
+           obj.fn <- mean(obj.fn)
+           
+         },
+         "group.median.silhouette"={})
+  
 
-cat("Make also case for PCA-based graph_clusts.fn.\n")
-
-obj <- function(d,){
-
+      
 
 }
 
