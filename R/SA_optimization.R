@@ -166,8 +166,10 @@ control <- list(maxit=5000, # max number iterations
   verbose=TRUE,
   smooth=FALSE, # smoothness objective function
   max.call=1e7, # max calls objective function
-  max.time=300 # (s) max running time - 1 h
-)
+  max.time=10, # (s) max running time - 1 h
+  verbose=TRUE,
+  seed=1234
+  )
 
 
 
@@ -201,6 +203,8 @@ type.fun <- "mean.silhouette" # "mean.silhouette" "median.silhouette" "group.mea
 ##### Call GenSA
 set.seed(1234)
 fn.call <<- 0
+par.history <<- matrix(c(0,0,0,0),nrow=1)
+colnames(par.history) <- c("res", "NN", "num.clusters","obj fun")
 
 out.GenSA <- GenSA(fn=obj,
                    par=NULL,
@@ -209,8 +213,9 @@ out.GenSA <- GenSA(fn=obj,
                    control = control,
                    d, S.obj,NN_range, assay.name, clust_alg, type.fun) # other parameters
 
+par.history <- par.history[-1,]
 
-
+out.GenSA$par[2] <- as.integer(floor(out.GenSA$par[2]*NN_range[2]))
 
 cat("Make also case for PCA-based obj.fn.\n Should you also add a require for Seurat and cluster and factoextra within obj?\n",
     "Clust alg for the moment is just Louvain, either remove it or consider adding many more.\n",
@@ -218,6 +223,7 @@ cat("Make also case for PCA-based obj.fn.\n Should you also add a require for Se
     "Also set control options, especially temperature and stopping conditions")
 
 obj <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
+
 
   
     # first argument: x are the parameters SA is optimizing over
@@ -257,8 +263,9 @@ obj <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
                                 algorithm=clust_alg)
   )
   
-
-  if (nlevels(S.obj$seurat_clusters) == 1) {return(1)}
+  num_clusts <- nlevels(S.obj$seurat_clusters)
+  
+  if (num_clusts == 1) {return(1)}
   
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters) , d)
 
@@ -286,11 +293,15 @@ obj <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
   
   obj.fn <- -obj.fn # - (obj.fn) for optimization
   
-  print(obj.fn)
+  par.history <<- rbind(par.history, c(x[1],NN,num_clusts,obj.fn))
+  
+  cat(c(x[1],NN,num_clusts,obj.fn),"\n")
+  
   
   return(obj.fn)
 
 }
+
 
 
 
