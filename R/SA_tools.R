@@ -1,7 +1,7 @@
-#' Single Cell cluster determination by simulated annealing
+#' Single Cell cluster determination by generalized simulated annealing
 #'
 #' @description
-#' 'SAClustering()' identifies clusters of cells by a shared nearest neighbor (SNN)
+#' `SAClustering()` identifies clusters of cells by a shared nearest neighbor (SNN)
 #' modularity optimization based clustering algorithm. `SAClustering()` makes use of
 #' `FindNeighbors()` and `FindClusters()` from the Seurat package to construct a SNN
 #' graph and identify clusters by optimizing a modularity function, respectively.
@@ -10,14 +10,42 @@
 #' objective function (see \code{type.fun}) using Simulated Annealing.
 #'
 #' @details
+#' ASasssqqw=wqwq Continue with description of details
 #'
-#' @param S.obj a Seurat object
-#' @param NN_range numeric vector containing the minimum and maximum number of nearest neighbors to
+#' @param S.obj A Seurat object
+#' @param NN_range A numeric vector containing the minimum and maximum number of nearest neighbors to
 #' on which optimization should be performed.
-#' @param assay assay
+#' @param assay Assay to use in construction of (S)NN. Default is `"RNA"`; used only when `reduction` is `FALSE`
+#' @param slot Slot to use in construction of (S)NN. Default is `scale.data`; used only when `reduction` is `FALSE`
+#' @param clust_alg Algorithm for modularity optimization (input to `Seurat::FindClusters`). `1` = Louvain (default); `2` = Louvain
+#' with multilevel refinement; `3` = SLM; `4` = Leiden (requires the leidenalg python). See `Seurat::FindClusters()`
+#' for further details.
+#' @param type.fun Objective function to be optimized by Simulated Annealing. Options include: `"mean.silhouette"` = mean
+#' silhouette computed over all cells in the dataset (default); `"median.silhouette"` = median silhouette computed over all cells in
+#' the dataset. `"group.mean.silhouette"` = mean of the per-group average silhouettes. `"group.median.silhouette"` = mean of the
+#' per-group median silhouettes.
+#' @param reduction Logical. Whether to perform silhouette-based optimized clustering using principal components (`TRUE`) or
+#' original variables in the provided `slot` of the Seurat object `assay` (`FALSE`). Setting `reduction` = `TRUE` requires
+#' a `DimReduc` object of name `"pca"` to be present in `S.obj`.
+#' @param control List of options for Simulated Annealing. See Gubian el al. (2018) https://cran.r-project.org/web/packages/GenSA/GenSA.pdf for the
+#' complete list of settings accepted. Default is `NULL`, i.e. default settings are employed in the
+#' optimization of `type.fun`.
+#' @param verbose Whether to print output. Default is `TRUE`.
+#' @param final Whether `SAClustering()` should include a Seurat object with optimal clustering
+#' results stored under `seurat_clusters` (thus overwritting pre-existent ones).
+#' @param plot Whether to plot outcomes from clustering. Default is `FALSE`.
+#'
+#' @return Returns a list with the following fields:
+#' \itemize{
+#' \item Continue with decription of items
+#' \item  weqew2
+#' \item woqwepq3
+#' }
+
+
 SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
                          clust_alg=1, type.fun="mean.silhouette",reduction=FALSE,
-                         control=NULL, verbose=TRUE, final=TRUE,plot=TRUE)
+                         control=NULL, verbose=TRUE, final=TRUE,plot=FALSE)
   {
 
   ######SA
@@ -28,8 +56,9 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
   "extending to more generic object types and generating the\n",
   "corresponding Seurat object from that.\n")
 
+  cat("Should I add a ... arguments passed to other methods?\n")
+
   cat("Comment and describe all of the parameters and allowed values.\n")
-  # type.fun <- "mean.silhouette" # "mean.silhouette" "median.silhouette" "group.mean.silhouette" "group.median.silhouette"
 
   cat("Add other distance types rather than the sole correlation distance.\n",
       "Add possibility to personalize also the number of features that can be used within an assay.\n",
@@ -79,32 +108,39 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
   # Call to GenSA to solve the optimization problem
 
+  par.env <- new.env() # to store par values when parent and children functions communicate
 
-  fn.call <<-0
-
-  par.history <<- matrix(c(0,0,0,0),nrow=1)
-  colnames(par.history) <- c("res", "NN", "num.clusters","obj fun")
+  par.env$fn.call <-0
+  assign("par.history", matrix(c(0,0,0,0),nrow=1), envir=par.env)
 
 
   cat("Distinguish cases also for features-based and PCA-based when calling the function.\n")
+
+  cat("Optimizing ",type.fun," using generalized simulated annealing.\n" )
 
   out.SA <- GenSA::GenSA(fn=obj.features,
                      par=NULL,
                      lower=lower,
                      upper=upper,
                      control = control,
-                     d, S.obj,NN_range, assay.name, clust_alg, type.fun) # other parameters
+                     d, S.obj,NN_range, assay.name, clust_alg, type.fun, verbose, par.env) # other parameters
 
 
-  par.history <- par.history[-1,]
+  par.env$par.history <- par.env$par.history[-1,]
   out.SA$par[2] <- as.integer(floor(out.SA$par[2]*NN_range[2]))
+  colnames(par.env$par.history) <- c("res", "NN", "num.clusters","obj fun")
 
 
   cat("Optimization completed.\nCall functions", fn.call, "times.\n")
 
 
-  clustering.optimization <- list("out.SA",out.SA,
-                                  "par.history", par.history)
+  clustering.optimization <- vector(mode="list")
+
+  clustering.optimization$optim.par <- out.SA$par
+  clustering.optimization$optim.value <- out.SA$value
+  clustering.optimization$trace.mat <- out.SA$trace.mat
+  clustering.optimization$counts <- out.SA$counts
+  clustering.optimization$par.history <- par.env$par.history
 
 
   if (final == TRUE){ # compute clustering using parameters from the optimization routine
@@ -116,7 +152,7 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
-                                          verbose = FALSE,
+                                          verbose = verbose,
                                           k.param = NN,
                                           annoy.metric = "euclidean",
                                           #dims=NULL,
@@ -131,11 +167,13 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
       S.obj <- Seurat::FindClusters(object=S.obj,
                                 graph.name="SA_snn",
                                 resolution=x[1],
-                                verbose=FALSE,
+                                verbose=verbose,
                                 modularity.fxn=1,
                                 algorithm=clust_alg)
     )
 
+
+    Idents(S.obj) <- "seurat_clusters"
 
     clustering.optimization$Seurat_object <- S.obj
 
@@ -143,6 +181,8 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
 
 
+
+  cat("Add plotting section")
 
 
 
@@ -159,9 +199,6 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
 
 
-
-
-
  return(clustering.optimization)
 
 
@@ -171,7 +208,7 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
 
 
-obj.features <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
+obj.features <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun,verbose, par.env){
 
   # first argument: x are the parameters SA is optimizing over
   # first element in x is resolution value, second element is num NN
@@ -184,14 +221,14 @@ obj.features <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
   # type.fn=for the switch case statement
   # add random.seed=seed in the FindClusters
 
-  fn.call <<- fn.call + 1
+  par.env$fn.call <- par.env$fn.call + 1
 
   NN <- as.integer(floor(x[2]*NN_range[2]))
 
 
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
-                                          verbose = FALSE,
+                                          verbose = verbose,
                                           k.param = NN,
                                           annoy.metric = "euclidean",
                                           #dims=NULL,
@@ -204,7 +241,7 @@ obj.features <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
   suppressWarnings(S.obj <- Seurat::FindClusters(object=S.obj,
                                   graph.name="SA_snn",
                                   resolution=x[1],
-                                  verbose=FALSE,
+                                  verbose=verbose,
                                   modularity.fxn=1,
                                   algorithm=clust_alg)
   )
@@ -224,7 +261,7 @@ obj.features <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
 
   obj.fn <- -obj.fn # -(obj.fn) for optimization
 
-  par.history <<- rbind(par.history, c(x[1],NN,num_clusts,obj.fn))
+  par.env$par.history <- rbind(par.env$par.history, c(x[1],NN,num_clusts,obj.fn))
 
   cat(c(x[1],NN,num_clusts,obj.fn),"\n")
 
@@ -234,11 +271,11 @@ obj.features <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun){
 }
 
 
-obj.reduction <- function(x,d,S.obj,NN_range, numPCs, assay.name, clust_alg, type.fun,optim.pc=FALSE){
+obj.reduction <- function(x,d,S.obj,NN_range, numPCs, assay.name, clust_alg, type.fun, verbose,optim.pc=FALSE, par.env){
 
 
   # describe inputs to all function
-  fn.call <<- fn.call + 1
+  par.env$fn.call <- par.env$fn.call + 1
 
   NN <- as.integer(floor(x[2]*NN_range[2]))
 
@@ -275,7 +312,7 @@ obj.reduction <- function(x,d,S.obj,NN_range, numPCs, assay.name, clust_alg, typ
 
   obj.fn <- -obj.fn # -(obj.fn) for optimization
 
-  par.history <<- rbind(par.history, c(x[1],NN,num_clusts,obj.fn))
+  par.env$par.history <- rbind(par.env$par.history, c(x[1],NN,num_clusts,obj.fn))
 
   cat(c(x[1],NN,num_clusts,obj.fn),"\n")
 

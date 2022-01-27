@@ -2,8 +2,7 @@
 % Please edit documentation in R/SA_tools.R
 \name{SAClustering}
 \alias{SAClustering}
-\title{SAClustering
-Computes silhouette-optimized clustering solution using Simulated Annealing.}
+\title{Single Cell cluster determination by generalized simulated annealing}
 \usage{
 SAClustering(
   S.obj,
@@ -16,20 +15,60 @@ SAClustering(
   control = NULL,
   verbose = TRUE,
   final = TRUE,
-  plot = TRUE
+  plot = FALSE
 )
 }
 \arguments{
-\item{S.obj}{a Seurat object}
+\item{S.obj}{A Seurat object}
 
-\item{NN_range}{numeric vector containing the minimum and maximum number of nearest neighbors to
+\item{NN_range}{A numeric vector containing the minimum and maximum number of nearest neighbors to
 on which optimization should be performed.}
 
-\item{assay}{assay}
+\item{assay}{Assay to use in construction of (S)NN. Default is \code{"RNA"}; used only when \code{reduction} is \code{FALSE}}
+
+\item{slot}{Slot to use in construction of (S)NN. Default is \code{scale.data}; used only when \code{reduction} is \code{FALSE}}
+
+\item{clust_alg}{Algorithm for modularity optimization (input to \code{Seurat::FindClusters}). \code{1} = Louvain (default); \code{2} = Louvain
+with multilevel refinement; \code{3} = SLM; \code{4} = Leiden (requires the leidenalg python). See \code{Seurat::FindClusters()}
+for further details.}
+
+\item{type.fun}{Objective function to be optimized by Simulated Annealing. Options include: \code{"mean.silhouette"} = mean
+silhouette computed over all cells in the dataset (default); \code{"median.silhouette"} = median silhouette computed over all cells in
+the dataset. \code{"group.mean.silhouette"} = mean of the per-group average silhouettes. \code{"group.median.silhouette"} = mean of the
+per-group median silhouettes.}
+
+\item{reduction}{Logical. Whether to perform silhouette-based optimized clustering using principal components (\code{TRUE}) or
+original variables in the provided \code{slot} of the Seurat object \code{assay} (\code{FALSE}). Setting \code{reduction} = \code{TRUE} requires
+a \code{DimReduc} object of name \code{"pca"} to be present in \code{S.obj}.}
+
+\item{control}{List of options for Simulated Annealing. See Gubian el al. (2018) https://cran.r-project.org/web/packages/GenSA/GenSA.pdf for the
+complete list of settings accepted. Default is \code{NULL}, i.e. default settings are employed in the
+optimization of \code{type.fun}.}
+
+\item{verbose}{Whether to print output. Default is \code{TRUE}.}
+
+\item{final}{Whether \code{SAClustering()} should include a Seurat object with optimal clustering
+results stored under \code{seurat_clusters} (thus overwritting pre-existent ones).}
+
+\item{plot}{Whether to plot outcomes from clustering. Default is \code{FALSE}.}
+}
+\value{
+Returns a list with the following fields:
+\itemize{
+\item mwqwqw1
+\item  weqew2
+\item woqwepq3
+}
 }
 \description{
-'SA_tools' returns
+\code{SAClustering()} identifies clusters of cells by a shared nearest neighbor (SNN)
+modularity optimization based clustering algorithm. \code{SAClustering()} makes use of
+\code{FindNeighbors()} and \code{FindClusters()} from the Seurat package to construct a SNN
+graph and identify clusters by optimizing a modularity function, respectively.
+To help the user in the choice of a (close-to) optimal choice of the parameters,
+number of nearest neighbors and resolution, \code{SAClustering()} optimizes a user-defined
+objective function (see \code{type.fun}) using Simulated Annealing.
 }
 \details{
-I hope it is gonna work
+ASasssqqw=wqwq
 }
