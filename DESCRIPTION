@@ -1,33 +1,12 @@
 Package: silhClust
-Title: Optimizes K and Resolution Parameters for Clustering
+Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    c(person("Alessandro", "Vasciaveo", email = "av2729@cumc.columbia.edu", role = c("aut"),
-           comment = c(ORCID = "YOUR-ORCID-ID")),
-      person("Luca", "Zanella", email = "lz2841@cumc.columbia.edu", role = c("aut","cre"),
-	   comment = c(ORCID = "0000-0001-7955-0168"))
-      )	
-Description: Optimizes K and Resolution Parameters for Clustering based on the Silhouette Score.
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
-Imports: 
-    cluster,
-    dplyr,
-    doParallel,
-    factoextra,
-    foreach,
-    parallel,
-    Seurat 
-Depends: 
-    R (>= 2.14.0), 
-    foreach, 
-    parallel, 
-    doParallel,
-    Seurat
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-Suggests: 
-    rmarkdown,
-    knitr
-VignetteBuilder: knitr
