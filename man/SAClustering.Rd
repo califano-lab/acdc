@@ -55,7 +55,7 @@ results stored under \code{seurat_clusters} (thus overwritting pre-existent ones
 \value{
 Returns a list with the following fields:
 \itemize{
-\item mwqwqw1
+\item Continue with decription of items
 \item  weqew2
 \item woqwepq3
 }
@@ -70,5 +70,8 @@ number of nearest neighbors and resolution, \code{SAClustering()} optimizes a us
 objective function (see \code{type.fun}) using Simulated Annealing.
 }
 \details{
-ASasssqqw=wqwq
+ASasssqqw=wqwq Continue with description of details
+}
+\examples{
+Askosapa
 }

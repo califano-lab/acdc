@@ -33,7 +33,7 @@
 #' @param verbose Whether to print output. Default is `TRUE`.
 #' @param final Whether `SAClustering()` should include a Seurat object with optimal clustering
 #' results stored under `seurat_clusters` (thus overwritting pre-existent ones).
-#' @param plot Whether to plot outcomes from clustering. Default is `FALSE`.
+#' @param plot Whether to plot outcomes from clustering.
 #'
 #' @return Returns a list with the following fields:
 #' \itemize{
@@ -41,6 +41,8 @@
 #' \item  weqew2
 #' \item woqwepq3
 #' }
+#'
+#' @examples Askosapa
 
 
 SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
@@ -71,6 +73,7 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
     X <- switch(slot,
                 "counts"={
                   X <- as.matrix(S.obj[[assay]]@counts)
+
                 },
                 "data"={
                   X <- as.matrix(S.obj[[assay]]@data)
@@ -78,6 +81,10 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
                 "scale.data"={
                   X <- S.obj[[assay]]@scale.data
                 })
+
+    if (IsMatrixEmpty(X)==TRUE) {
+
+    }
 
 
     cell.dims <- 2 # cells are along columns
@@ -131,7 +138,7 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
   colnames(par.env$par.history) <- c("res", "NN", "num.clusters","obj fun")
 
 
-  cat("Optimization completed.\nCall functions", fn.call, "times.\n")
+  cat("Optimization completed.\nCall functions", par.env$fn.call, "times.\n")
 
 
   clustering.optimization <- vector(mode="list")
@@ -147,13 +154,11 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
     x <- out.SA$par
 
-    NN <- as.integer(floor(x[2]*NN_range[2]))
-
 
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
                                           verbose = verbose,
-                                          k.param = NN,
+                                          k.param = x[2],
                                           annoy.metric = "euclidean",
                                           #dims=NULL,
                                           #reduction=NULL,
@@ -173,7 +178,20 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
     )
 
 
-    Idents(S.obj) <- "seurat_clusters"
+    Seurat::Idents(S.obj) <- "seurat_clusters"
+
+
+
+    # Displays silhouette plot
+
+      s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
+
+      #require(factoextra)
+      plt.sil <- factoextra::fviz_silhouette(s)
+
+      print(plt.sil)
+
+
 
     clustering.optimization$Seurat_object <- S.obj
 
@@ -182,7 +200,6 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
 
 
-  cat("Add plotting section")
 
 
 
