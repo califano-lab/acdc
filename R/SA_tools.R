@@ -121,16 +121,30 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
   assign("par.history", matrix(c(0,0,0,0),nrow=1), envir=par.env)
 
 
-  cat("Distinguish cases also for features-based and PCA-based when calling the function.\n")
 
-  cat("Optimizing ",type.fun," using generalized simulated annealing.\n" )
+  cat("Optimizing ",type.fun," using generalized simulated annealing. Reduction set to ", reduction, ".\n" )
 
-  out.SA <- GenSA::GenSA(fn=obj.features,
-                     par=NULL,
-                     lower=lower,
-                     upper=upper,
-                     control = control,
-                     d, S.obj,NN_range, assay.name, clust_alg, type.fun, verbose, par.env) # other parameters
+  if (reduction==FALSE) { # original features
+
+    out.SA <- GenSA::GenSA(fn=obj.features,
+                           par=NULL,
+                           lower=lower,
+                           upper=upper,
+                           control = control,
+                           d, S.obj,NN_range, assay.name, clust_alg, type.fun, verbose, par.env) # other parameters
+
+  } else if (reduction==TRUE) {
+
+    out.SA <- GenSA::GenSA(fn=obj.reduction,
+                           par=NULL,
+                           lower=lower,
+                           upper=upper,
+                           control = control,
+                           d,S.obj,NN_range, numPCs, assay.name, clust_alg, type.fun, verbose,optim.pc=FALSE, par.env) # other parameters
+
+  }
+
+
 
 
   par.env$par.history <- par.env$par.history[-1,]
@@ -155,6 +169,8 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
     x <- out.SA$par
 
 
+    if (reduction==FALSE) { # original features
+
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
                                           verbose = verbose,
@@ -177,10 +193,33 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
                                 algorithm=clust_alg)
     )
 
+    } else if (reduction==TRUE) { # principal components
+
+      S.obj <- Seurat::FindNeighbors(object=S.obj,
+                                     reduction="pca",
+                                     verbose = verbose,
+                                     k.param = x[2],
+                                     annoy.metric = "euclidean",
+                                     dims=numPCs,
+                                     compute.SNN = TRUE)
+
+      names(S.obj@graphs) <- c("SA_nn","SA_snn")
+
+      S.obj <- Seurat::FindClusters(object=S.obj,
+                                    graph.name="snn",
+                                    resolution=x[1],
+                                    verbose=verbose,
+                                    modularity.fxn=1,
+                                    algorithm=clust_alg)
+
+    }
+
+
+
+
+
 
     Seurat::Idents(S.obj) <- "seurat_clusters"
-
-
 
     # Displays silhouette plot
 
@@ -209,8 +248,7 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
 
 
-  cat("Make also case for PCA-based obj.fn.\n Should you also add a require for Seurat and cluster and factoextra within obj?\n",
-      "Clust alg for the moment is just Louvain, either remove it or consider adding many more.\n",
+  cat("Test other Clust alg for the moment is just Louvain, either remove it or consider adding many more.\n",
       "Also consider passing the parameter random.seed=some number in FindClusters.\n",
       "Also set control options, especially t`emperature and stopping conditions")
 
@@ -227,13 +265,13 @@ SAClustering <- function(S.obj,NN_range=c(3,30), assay="RNA", slot="scale.data",
 
 obj.features <- function(x,d,S.obj,NN_range, assay.name, clust_alg, type.fun,verbose, par.env){
 
-  # first argument: x are the parameters SA is optimizing over
+  # x are the parameters SA is optimizing over
   # first element in x is resolution value, second element is num NN
-  # additional aguments: additional parameters needed for computation
+  # additional arguments: additional parameters needed for computation
   # d = distance matrix
   # S.obj = Seurat object
-  # min and max number of NNs
-  # assay.name = perhaps needed for PCA-based clustering
+  # NN_range = min and max number of NNs
+  # assay.name = perhaps needed for PCA-based clustering?
   # clust_alg=Louvain, Leiden etc
   # type.fn=for the switch case statement
   # add random.seed=seed in the FindClusters
@@ -299,7 +337,7 @@ obj.reduction <- function(x,d,S.obj,NN_range, numPCs, assay.name, clust_alg, typ
 
   S.obj <- Seurat::FindNeighbors(object=S.obj,
                                         reduction="pca",
-                                        verbose = TRUE,
+                                        verbose = verbose,
                                         k.param = NN,
                                         annoy.metric = "euclidean",
                                         dims=numPCs,
@@ -310,7 +348,7 @@ obj.reduction <- function(x,d,S.obj,NN_range, numPCs, assay.name, clust_alg, typ
   S.obj <- Seurat::FindClusters(object=S.obj,
                                 graph.name="snn",
                                 resolution=x[1],
-                                verbose=TRUE,
+                                verbose=verbose,
                                 modularity.fxn=1,
                                 algorithm=clust_alg)
 
@@ -338,9 +376,6 @@ obj.reduction <- function(x,d,S.obj,NN_range, numPCs, assay.name, clust_alg, typ
 
 
 }
-
-
-
 
 
 
