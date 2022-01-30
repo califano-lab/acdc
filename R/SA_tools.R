@@ -37,7 +37,8 @@
 #' `simple.function`, `trace.mat`, `seed`. See Gubian el al. (2018) https://cran.r-project.org/web/packages/GenSA/GenSA.pdf for the
 #' complete description of the settings. Default is `NULL`, i.e. default settings are employed in the
 #' optimization of `type.fun`.
-#' @param verbose Whether to print output. Default is `TRUE`.
+#' @param verbose Whether to print output of each function call. Default is `TRUE`.
+#' @param diagnostics whether to print the outcomes of `FindNeighbors` and `FindClusters` at each function call. Default is `FALSE`.
 #' @param final Whether `SAClustering()` should include a Seurat object with optimal clustering
 #' results stored under `seurat_clusters` (thus overwritting pre-existent ones).
 #' @param plot Whether to plot outcomes from clustering.
@@ -58,12 +59,37 @@
 #'
 #' @seealso \code{\link[GenSA]{GenSA}}, \code{\link[Seurat]{FindNeighbors}}, \code{\link[Seurat]{FindClusters}}
 #'
-#' @examples Askosapa
+#' @examples
+#' # Do not run
+#' # Just to retrieve example data
+#' # (devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
+#'
+#' library(SeuratData) # just to retrieve some example data
+#' AvailableData() # to see some example data
+#' InstallData("pbmc3k")
+#' pbmc3k.final <- LoadData("pbmc3k",type="pbmc3k.final")
+#'
+#' # Actual example
+#' # Run SAClustering on gene expression data with default optimization parameters
+#'
+#' clust.optimization <- SAClustering(S.obj=pbmc3k.final,
+#' res.range=c(0.1,1),
+#' NN.range=c(3,15),
+#' verbose=FALSE,
+#' final=TRUE,
+#' plot=TRUE)
+#'
+#'
+#' # Run SAClustering using principal components as features
+#' clust.optimization <- SAClustering(S.obj=pbmc3.final,
+#'
+#'@export
+
 
 
 SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NULL, assay="RNA", slot="scale.data", reduction=FALSE,
                          reduction.slot="pca",clust.alg=1, type.fun="mean.silhouette",
-                         control=NULL, verbose=TRUE, final=TRUE,plot=FALSE)
+                         control=NULL, verbose=TRUE, final=TRUE, plot=FALSE, diagnostics=FALSE)
   {
 
   ######SA
@@ -158,7 +184,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                            lower=lower,
                            upper=upper,
                            control = control,
-                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, par.env) # other parameters
+                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, par.env) # other parameters
 
   } else if (reduction==TRUE) {
 
@@ -167,7 +193,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                            lower=lower,
                            upper=upper,
                            control = control,
-                           d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose,optim.pc=FALSE, par.env) # other parameters
+                           d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, optim.pc=FALSE, par.env) # other parameters
 
   }
 
@@ -200,7 +226,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
-                                          verbose = verbose,
+                                          verbose = diagnostics,
                                           k.param = x[2],
                                           annoy.metric = "euclidean",
                                           #dims=NULL,
@@ -215,7 +241,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
       S.obj <- Seurat::FindClusters(object=S.obj,
                                 graph.name="SA_snn",
                                 resolution=x[1],
-                                verbose=verbose,
+                                verbose=diagnostics,
                                 modularity.fxn=1,
                                 algorithm=clust.alg)
     )
@@ -224,7 +250,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
       S.obj <- Seurat::FindNeighbors(object=S.obj,
                                      reduction="pca",
-                                     verbose = verbose,
+                                     verbose = diagnostics,
                                      k.param = x[2],
                                      annoy.metric = "euclidean",
                                      dims=1:numPCs,
@@ -235,7 +261,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
       S.obj <- Seurat::FindClusters(object=S.obj,
                                     graph.name="SA_snn",
                                     resolution=x[1],
-                                    verbose=verbose,
+                                    verbose=diagnostics,
                                     modularity.fxn=1,
                                     algorithm=clust.alg)
 
@@ -290,7 +316,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
 
 
-obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, par.env){
+obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, par.env){
 
   # x are the parameters SA is optimizing over
   # first element in x is resolution value, second element is num NN
@@ -310,7 +336,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
-                                          verbose = verbose,
+                                          verbose = diagnostics,
                                           k.param = NN,
                                           annoy.metric = "euclidean",
                                           #dims=NULL,
@@ -323,7 +349,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
   suppressWarnings(S.obj <- Seurat::FindClusters(object=S.obj,
                                   graph.name="SA_snn",
                                   resolution=x[1],
-                                  verbose=verbose,
+                                  verbose=diagnostics,
                                   modularity.fxn=1,
                                   algorithm=clust.alg)
   )
@@ -345,7 +371,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
   par.env$par.history <- rbind(par.env$par.history, c(x[1],NN,num_clusts,obj.fn))
 
-  cat(c(x[1],NN,num_clusts,obj.fn),"\n")
+  case(verbose,"TRUE"={cat(c(x[1],NN,num_clusts,obj.fn),"\n")})
 
 
   return(obj.fn)
@@ -353,7 +379,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 }
 
 
-obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose,optim.pc=FALSE, par.env){
+obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, optim.pc=FALSE, par.env){
 
 
   # describe inputs to all function
@@ -364,7 +390,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
   S.obj <- Seurat::FindNeighbors(object=S.obj,
                                         reduction="pca",
-                                        verbose = verbose,
+                                        verbose = diagnostics,
                                         k.param = NN,
                                         annoy.metric = "euclidean",
                                         dims=1:numPCs,
@@ -375,7 +401,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
   S.obj <- Seurat::FindClusters(object=S.obj,
                                 graph.name="SA_snn",
                                 resolution=x[1],
-                                verbose=verbose,
+                                verbose=diagnostics,
                                 modularity.fxn=1,
                                 algorithm=clust.alg)
 
@@ -396,7 +422,8 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
   par.env$par.history <- rbind(par.env$par.history, c(x[1],NN,num_clusts,obj.fn))
 
-  cat(c(x[1],NN,num_clusts,obj.fn),"\n")
+  case(verbose, "TRUE"={cat(c(x[1],NN,num_clusts,obj.fn),"\n")})
+
 
 
   return(obj.fn)

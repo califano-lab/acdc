@@ -11,13 +11,15 @@ SAClustering(
   par.init = NULL,
   assay = "RNA",
   slot = "scale.data",
+  reduction = FALSE,
+  reduction.slot = "pca",
   clust.alg = 1,
   type.fun = "mean.silhouette",
-  reduction = FALSE,
   control = NULL,
   verbose = TRUE,
   final = TRUE,
-  plot = FALSE
+  plot = FALSE,
+  diagnostics = FALSE
 )
 }
 \arguments{
@@ -36,6 +38,12 @@ within in the range specified by \code{res.range} and \code{NN.range}.}
 
 \item{slot}{Slot to use in construction of (S)NN. Default is \code{scale.data}; used only when \code{reduction} is \code{FALSE}}
 
+\item{reduction}{Logical. Whether to perform silhouette-based optimized clustering using principal components (\code{TRUE}) or
+original variables in the provided \code{slot} of the Seurat object \code{assay} (\code{FALSE}). Setting \code{reduction} = \code{TRUE} requires
+a \code{DimReduc} object of name \code{"pca"} to be present in \code{S.obj}.}
+
+\item{reduction.slot}{reduction slot to use if \code{reduction} is set to \code{TRUE}, ignored otherwise. Default is \code{"pca"}}
+
 \item{clust.alg}{Algorithm for modularity optimization (input to \code{Seurat::FindClusters}). \code{1} = Louvain (default); \code{2} = Louvain
 with multilevel refinement; \code{3} = SLM; \code{4} = Leiden (requires the leidenalg python). See \code{Seurat::FindClusters()}
 for further details.}
@@ -45,22 +53,20 @@ silhouette computed over all cells in the dataset (default); \code{"median.silho
 the dataset. \code{"group.mean.silhouette"} = mean of the per-group average silhouettes. \code{"group.median.silhouette"} = mean of the
 per-group median silhouettes.}
 
-\item{reduction}{Logical. Whether to perform silhouette-based optimized clustering using principal components (\code{TRUE}) or
-original variables in the provided \code{slot} of the Seurat object \code{assay} (\code{FALSE}). Setting \code{reduction} = \code{TRUE} requires
-a \code{DimReduc} object of name \code{"pca"} to be present in \code{S.obj}.}
-
 \item{control}{List of options for Simulated Annealing. Available options are: \code{maxit}, \code{threshold.stop}, \code{nb.stop.improvement},
 \code{smooth}, \code{max.call}, \code{max.time}, \code{temperature}, \code{visiting.param}, \code{acceptance.param}, \code{verbose},
 \code{simple.function}, \code{trace.mat}, \code{seed}. See Gubian el al. (2018) https://cran.r-project.org/web/packages/GenSA/GenSA.pdf for the
 complete description of the settings. Default is \code{NULL}, i.e. default settings are employed in the
 optimization of \code{type.fun}.}
 
-\item{verbose}{Whether to print output. Default is \code{TRUE}.}
+\item{verbose}{Whether to print output of each function call. Default is \code{TRUE}.}
 
 \item{final}{Whether \code{SAClustering()} should include a Seurat object with optimal clustering
 results stored under \code{seurat_clusters} (thus overwritting pre-existent ones).}
 
 \item{plot}{Whether to plot outcomes from clustering.}
+
+\item{diagnostics}{whether to print the outcomes of \code{FindNeighbors} and \code{FindClusters} at each function call. Default is \code{FALSE}.}
 }
 \value{
 Returns a list with the following fields:
@@ -90,7 +96,23 @@ Continue with description of details
 Add notes
 }
 \examples{
-Askosapa
+# Do not run
+# (devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
+library(SeuratData) # just to retrieve some example data
+AvailableData() # to see some example data
+InstallData("pbmc3k")
+pbmc3k.final <- LoadData("pbmc3k",type="pbmc3k.final")
+
+# Run SAClustering on gene expression data with default optimization parameters
+
+clust.optimization <- SAClustering(S.obj=pbmc3k.final,
+res.range=c(0.01,1),
+NN.range=c(3,15),
+verbose=FALSE,
+final=TRUE,
+plot=TRUE)
+
+
 }
 \seealso{
 \code{\link[GenSA]{GenSA}}, \code{\link[Seurat]{FindNeighbors}}, \code{\link[Seurat]{FindClusters}}
