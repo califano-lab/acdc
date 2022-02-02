@@ -63,9 +63,9 @@
 #' @author Luca Zanella
 #'
 #' @examples
-#' # Do not run
+#' \dontrun{
 #' # Just to retrieve example data
-#' # (devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
+#' # devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
 #'
 #' library(SeuratData) # just to retrieve some example data
 #' AvailableData() # to see some example data
@@ -78,13 +78,44 @@
 #' clust.optimization <- SAClustering(S.obj=pbmc3k.final,
 #' res.range=c(0.1,1),
 #' NN.range=c(3,15),
-#' verbose=FALSE,
+#' reduction=FALSE,
+#' verbose=TRUE,
 #' final=TRUE,
 #' plot=TRUE)
+#'}
 #'
 #'
-#' # Run SAClustering using principal components as features
-#' clust.optimization <- SAClustering(S.obj=pbmc3.final,
+#' \dontrun{
+#' # Run SAClustering using principal components as features, allowing
+#' # max computation time of 2 min
+#'
+#' # Define control parameters for SAClustering (input to GenSA)
+#' settings <- list(max.time=120) # max.time must be in s
+#'
+#' clust.optimization <- SAClustering(S.obj=pbmc3k.final,
+#' res.range=c(0.1,1),
+#' NN.range=c(3,15),
+#' reduction=TRUE,
+#' control=settings,
+#' plot=FALSE)
+#'}
+#'
+#'
+#'\dontrun{
+#' # Run SAClustering with user-defined optimization settings
+#'
+#' # Increase temperature: computationally, demanding, useful for complex problems
+#'
+#' settings <- list(temperature=1e7)
+#'
+#' clust.optimization <- SAClustering(S.obbj=pbmc3k.final,
+#' res.range=c(0.1,1),
+#' NN.range=c(3,15),
+#' par.init=c(0.5,7),
+#' control=settings
+#' )
+#'}
+#'
 #'
 #'@export
 
