@@ -19,7 +19,8 @@ SAClustering(
   verbose = TRUE,
   final = TRUE,
   plot = FALSE,
-  diagnostics = FALSE
+  diagnostics = FALSE,
+  rng.seeds = c(1234, 0)
 )
 }
 \arguments{
@@ -67,6 +68,8 @@ results stored under \code{seurat_clusters} (thus overwritting pre-existent ones
 \item{plot}{Whether to plot outcomes from clustering.}
 
 \item{diagnostics}{whether to print the outcomes of \code{FindNeighbors} and \code{FindClusters} at each function call. Default is \code{FALSE}.}
+
+\item{rng.seeds}{Seeds of the random number generators. The first element is used in \code{GenSA}, the second element is \code{FindClusters}.}
 }
 \value{
 Returns a list with the following fields:
@@ -97,23 +100,32 @@ Add notes
 }
 \examples{
 # Do not run
+# Just to retrieve example data
 # (devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
+
 library(SeuratData) # just to retrieve some example data
 AvailableData() # to see some example data
 InstallData("pbmc3k")
 pbmc3k.final <- LoadData("pbmc3k",type="pbmc3k.final")
 
+# Actual example
 # Run SAClustering on gene expression data with default optimization parameters
 
 clust.optimization <- SAClustering(S.obj=pbmc3k.final,
-res.range=c(0.01,1),
+res.range=c(0.1,1),
 NN.range=c(3,15),
 verbose=FALSE,
 final=TRUE,
 plot=TRUE)
 
 
+# Run SAClustering using principal components as features
+clust.optimization <- SAClustering(S.obj=pbmc3.final,
+
 }
 \seealso{
 \code{\link[GenSA]{GenSA}}, \code{\link[Seurat]{FindNeighbors}}, \code{\link[Seurat]{FindClusters}}
+}
+\author{
+Luca Zanella
 }

@@ -42,6 +42,7 @@
 #' @param final Whether `SAClustering()` should include a Seurat object with optimal clustering
 #' results stored under `seurat_clusters` (thus overwritting pre-existent ones).
 #' @param plot Whether to plot outcomes from clustering.
+#' @param rng.seeds Seeds of the random number generators. The first element is used in `GenSA`, the second element is `FindClusters`.
 #'
 #' @return Returns a list with the following fields:
 #' \itemize{
@@ -58,6 +59,8 @@
 #' @note Add notes
 #'
 #' @seealso \code{\link[GenSA]{GenSA}}, \code{\link[Seurat]{FindNeighbors}}, \code{\link[Seurat]{FindClusters}}
+#'
+#' @author Luca Zanella
 #'
 #' @examples
 #' # Do not run
@@ -89,7 +92,7 @@
 
 SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NULL, assay="RNA", slot="scale.data", reduction=FALSE,
                          reduction.slot="pca",clust.alg=1, type.fun="mean.silhouette",
-                         control=NULL, verbose=TRUE, final=TRUE, plot=FALSE, diagnostics=FALSE)
+                         control=NULL, verbose=TRUE, final=TRUE, plot=FALSE, diagnostics=FALSE, rng.seeds=c(1234,0))
   {
 
   ######SA
@@ -97,16 +100,12 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   #require(Seurat)
 
   cat("Function currently works with Seurat objects consider\n",
-  "extending to more generic object types and generating the\n",
-  "corresponding Seurat object from that.\n")
+  "extending to more generic object types.")
 
   cat("Should I add a ... arguments passed to other methods?\n")
 
-  cat("Comment and describe all of the parameters and allowed values.\n")
-
   cat("Add other distance types rather than the sole correlation distance.\n",
-      "Add possibility to personalize also the number of features that can be used within an assay.\n",
-      "Add also description of value.\n")
+      "Add possibility to personalize also the number of features that can be used within an assay.\n")
 
   # Process inputs to function
 
@@ -174,17 +173,18 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   assign("par.history", matrix(c(0,0,0,0),nrow=1), envir=par.env)
 
 
-
+  set.seed(rng.seeds[1])
   cat("Optimizing ",type.fun," using generalized simulated annealing. Reduction set to ", as.character(reduction), ".\n" )
 
   if (reduction==FALSE) { # original features
+
 
     out.SA <- GenSA::GenSA(fn=obj.features,
                            par=par.init,
                            lower=lower,
                            upper=upper,
                            control = control,
-                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, par.env) # other parameters
+                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, par.env) # other parameters
 
   } else if (reduction==TRUE) {
 
@@ -193,7 +193,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                            lower=lower,
                            upper=upper,
                            control = control,
-                           d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, optim.pc=FALSE, par.env) # other parameters
+                           d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, optim.pc=FALSE, rng.seeds, par.env) # other parameters
 
   }
 
@@ -243,6 +243,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                 resolution=x[1],
                                 verbose=diagnostics,
                                 modularity.fxn=1,
+                                random.seed=rng.seeds[2],
                                 algorithm=clust.alg)
     )
 
@@ -263,6 +264,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                     resolution=x[1],
                                     verbose=diagnostics,
                                     modularity.fxn=1,
+                                    random.seed=rng.seeds[2],
                                     algorithm=clust.alg)
 
     }
@@ -300,13 +302,6 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
 
 
-
-  cat("Test other Clust alg for the moment is just Louvain, either remove it or consider adding many more.\n",
-      "Also consider passing the parameter random.seed=some number in FindClusters.\n",
-      "Also set control options, especially t`emperature and stopping conditions")
-
-
-
  return(clustering.optimization)
 
 
@@ -316,7 +311,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
 
 
-obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, par.env){
+obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, rng.seeds, par.env){
 
   # x are the parameters SA is optimizing over
   # first element in x is resolution value, second element is num NN
@@ -351,6 +346,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
                                   resolution=x[1],
                                   verbose=diagnostics,
                                   modularity.fxn=1,
+                                  random.seed=rng.seeds[2],
                                   algorithm=clust.alg)
   )
 
@@ -371,7 +367,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
   par.env$par.history <- rbind(par.env$par.history, c(x[1],NN,num_clusts,obj.fn))
 
-  case(verbose,"TRUE"={cat(c(x[1],NN,num_clusts,obj.fn),"\n")})
+  switch(verbose,"TRUE"={cat(c(x[1],NN,num_clusts,obj.fn),"\n")})
 
 
   return(obj.fn)
@@ -379,7 +375,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 }
 
 
-obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, optim.pc=FALSE, par.env){
+obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, optim.pc=FALSE, rng.seeds, par.env){
 
 
   # describe inputs to all function
@@ -403,6 +399,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
                                 resolution=x[1],
                                 verbose=diagnostics,
                                 modularity.fxn=1,
+                                random.seed=rng.seeds[2],
                                 algorithm=clust.alg)
 
 
@@ -422,7 +419,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
   par.env$par.history <- rbind(par.env$par.history, c(x[1],NN,num_clusts,obj.fn))
 
-  case(verbose, "TRUE"={cat(c(x[1],NN,num_clusts,obj.fn),"\n")})
+  switch(verbose, "TRUE"={cat(c(x[1],NN,num_clusts,obj.fn),"\n")})
 
 
 
