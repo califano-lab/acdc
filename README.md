@@ -13,14 +13,15 @@ Remaning functions are not intended to be part of the package
 2. Convert output to Seurat Object
 3. RunTime and other parameters added to the output
 4. Colors silhouette
-5. List of negative clusters (Thibshirani)
-6. Add automatic computation of PCA in the tool? 
-7. Add progress bar in situations where useful
-8. 100,000 -> 500 -> FastClust2 -> kNN 
-9. Rename control list
-10. if control = NULL, choose fast action (to be decided after some tests) 
-11. Provide additional objective functions
-12. 
+5. Add optimization number of PCs
+6. List of negative clusters (Thibshirani)
+7. Add automatic computation of PCA in the tool? 
+8. Add progress bar in situations where useful
+9. 100,000 -> 500 -> FastClust2 -> kNN 
+10. Rename control list
+11. if control = NULL, choose fast action (to be decided after some tests) 
+12. Provide additional objective functions
+13. Twick for span larger space when optmizing NN (possibly useful for other parameters)  
 
 
 # Paper
