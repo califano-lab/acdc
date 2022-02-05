@@ -52,7 +52,9 @@
 #' \item `num.evaluations` number of times the objective function is evaluated
 #' \item `par.history` matrix collecting resolution, number of nearest neighbors, number of clusters and objective
 #  function at each function call
-#' \item `Seurat_object` copy of the input argument S.obj with optimal clustering solution stored in `seurat_clusters`.
+#' \item `Seurat_object` copy of the input argument S.obj with optimal clustering solution stored in `seurat_clusters` and the
+#' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` .
+#'
 #' Returned only if `final = TRUE`.
 #' }
 #'
@@ -310,6 +312,10 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
     # Displays silhouette plot
 
       s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
+
+      S.obj[[assay]]@misc$sil <- s
+
+      S.obj[[assay]]@counts
 
       #require(factoextra)
       plt.sil <- factoextra::fviz_silhouette(s)

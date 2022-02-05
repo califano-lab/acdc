@@ -79,7 +79,9 @@ Returns a list with the following fields:
 \item \code{trace.mat} matrix collecting the history of the algorithm, as produced by the GenSA package.
 \item \code{num.evaluations} number of times the objective function is evaluated
 \item \code{par.history} matrix collecting resolution, number of nearest neighbors, number of clusters and objective
-\item \code{Seurat_object} copy of the input argument S.obj with optimal clustering solution stored in \code{seurat_clusters}.
+\item \code{Seurat_object} copy of the input argument S.obj with optimal clustering solution stored in \code{seurat_clusters} and the
+corresponding \code{silhouette} object stored in \code{Seurat_object[[assay]]@misc$sil} .
+
 Returned only if \code{final = TRUE}.
 }
 }
@@ -99,15 +101,9 @@ Continue with description of details
 Add notes
 }
 \examples{
-<<<<<<< HEAD
-# Do not run
-# Just to retrieve example data
-# (devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
-=======
 \dontrun{
 # Just to retrieve example data
 # devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
->>>>>>> 2e868dd4113b3ea1074a7f5c15441e3bdb052106
 
 library(SeuratData) # just to retrieve some example data
 AvailableData() # to see some example data
@@ -158,9 +154,6 @@ control=settings
 )
 }
 
-
-# Run SAClustering using principal components as features
-clust.optimization <- SAClustering(S.obj=pbmc3.final,
 
 }
 \seealso{
