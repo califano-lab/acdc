@@ -32,13 +32,13 @@ devtools::install_github("LucaZanella15/silhClust")
 6. Add progress bar in situations where useful
 7. 100,000 -> 500 -> FastClust2 -> kNN 
 8. Rename control list
-9. if control = NULL, choose fast action (to be decided after some tests) 
-10. Provide additional objective functions
-11. Tweak for span larger space when optmizing NN (possibly useful for other parameters)  
+9. Provide additional objective functions
+10. Tweak for span larger space when optmizing NN (possibly useful for other parameters)  
 
 
 # Others
 1. Colors silhouette
+2. if control = NULL, choose fast action, i.e. default parameters for fast solution (to be decided after some tests) 
 
 
 
