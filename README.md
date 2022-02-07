@@ -16,8 +16,8 @@ devtools::install_github("LucaZanella15/silhClust")
 ```
 
 # Dependencies
-
-
+1. ```Seurat```: the code actually integrates within the `Seurat` pipeline for single cell analysis and makes use of `Seurat Objects`. 
+2. `GenSA`: for optimization based on simulated annealing
 
 
 --------------------------------------------------------------------------------------------------
