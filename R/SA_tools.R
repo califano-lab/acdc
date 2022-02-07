@@ -373,15 +373,13 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
       S.obj[[assay]]@misc$sil <- s
 
-      S.obj[[assay]]@counts
-
       #require(factoextra)
       plt.sil <- factoextra::fviz_silhouette(s)
 
-      print(plt.sil)
-
-
-
+          
+      switch(verbose, "TRUE"={print(plt.sil)})
+          
+    
     clustering.optimization$Seurat_object <- S.obj
 
   }
@@ -574,29 +572,6 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
   
   
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
