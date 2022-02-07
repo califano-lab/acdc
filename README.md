@@ -42,15 +42,6 @@ devtools::install_github("LucaZanella15/silhClust")
 
 
 
-
-# Done
-_1. Add optimization number of PCs_ (Feb 7, 2022)
-
-
-
-
-
-
 # Paper
 3 datasets: fair comparison between grid search and SAClustering: focus on time and spanned solutions.
   - benchmark (e.g. pbmc3k)
@@ -63,6 +54,10 @@ _1. Add optimization number of PCs_ (Feb 7, 2022)
   - Silhouette boxplots
 
 
+
+
+# What comes after the paper
+1. Add Details in help and vignettes
 
 
 
