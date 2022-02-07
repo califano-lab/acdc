@@ -11,8 +11,9 @@ SAClustering(
   par.init = NULL,
   assay = "RNA",
   slot = "scale.data",
-  reduction = FALSE,
+  reduction = TRUE,
   reduction.slot = "pca",
+  optimize.pcs = FALSE,
   clust.alg = 1,
   type.fun = "mean.silhouette",
   control = NULL,
@@ -33,7 +34,8 @@ on which optimization should be performed. Default is \code{c(3,30)}.}
 
 \item{par.init}{A vector containing the initial values for the optimization parameters. First and second element
 refer the the initial value of the resolution and number of nearest-neighbors, respectively. Values must be
-within in the range specified by \code{res.range} and \code{NN.range}.}
+within in the range specified by \code{res.range} and \code{NN.range}. If \code{optimize.pcs} is \code{TRUE}, a third element (integer) must be provided, as the
+initialization parameter for the number of principal components. This value must be}
 
 \item{assay}{Assay to use in construction of (S)NN. Default is \code{"RNA"}; used only when \code{reduction} is \code{FALSE}}
 
@@ -44,6 +46,9 @@ original variables in the provided \code{slot} of the Seurat object \code{assay}
 a \code{DimReduc} object of name \code{"pca"} to be present in \code{S.obj}.}
 
 \item{reduction.slot}{reduction slot to use if \code{reduction} is set to \code{TRUE}, ignored otherwise. Default is \code{"pca"}}
+
+\item{optimize.pcs}{whether to optimize on the number of principal components in addition to the number of nearest neighbors and resolution.
+Used only if \code{reduction = TRUE}. Default is \code{FALSE}.}
 
 \item{clust.alg}{Algorithm for modularity optimization (input to \code{Seurat::FindClusters}). \code{1} = Louvain (default); \code{2} = Louvain
 with multilevel refinement; \code{3} = SLM; \code{4} = Leiden (requires the leidenalg python). See \code{Seurat::FindClusters()}
@@ -142,7 +147,7 @@ plot=FALSE)
 \dontrun{
 # Run SAClustering with user-defined optimization settings
 
-# Increase temperature: computationally, demanding, useful for complex problems
+# Increase temperature: computationally demanding, useful for complex problems
 
 settings <- list(temperature=1e7)
 
