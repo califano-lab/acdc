@@ -3,7 +3,7 @@ choice of the number of clusters by optimization of the silhouette score
 
 SAClustering is the function to run Generalized Simulated Annealing Optimization on Silhouette
 
-Remaning functions are not intended to be part of the package
+Remaining functions are not intended to be part of the package
 
 
 
