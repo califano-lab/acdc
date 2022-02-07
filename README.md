@@ -10,7 +10,17 @@ Remaning functions are not intended to be part of the package
 # Installation 
 1. Start R
 2. Run the following commands
-< install.packages("devtools") />
+```
+install.packages("devtools")
+devtools::install_github("LucaZanella15/silhClust")
+```
+
+# Dependencies
+
+
+
+
+--------------------------------------------------------------------------------------------------
 
 # Code
 
@@ -25,6 +35,17 @@ Remaning functions are not intended to be part of the package
 9. if control = NULL, choose fast action (to be decided after some tests) 
 10. Provide additional objective functions
 11. Tweak for span larger space when optmizing NN (possibly useful for other parameters)  
+
+
+# Others
+1. Colors silhouette
+
+
+
+
+# Done
+_1. Add optimization number of PCs_ (Feb 7, 2022)
+
 
 
 
@@ -42,13 +63,9 @@ Remaning functions are not intended to be part of the package
   - Silhouette boxplots
 
 
-# Others
-1. Colors silhouette
 
 
 
 
-# Done
-_1. Add optimization number of PCs_ (Feb 7, 2022)
 
 
