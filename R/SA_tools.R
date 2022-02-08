@@ -300,7 +300,6 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
   x <- out.SA$par
 
-
   if (reduction==FALSE) { # original features
 
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
@@ -348,8 +347,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                        compute.SNN = TRUE)
         
     }
-      
-      
+
       names(S.obj@graphs) <- c("SA_nn","SA_snn")
 
       S.obj <- Seurat::FindClusters(object=S.obj,
@@ -371,7 +369,10 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
       S.obj[[assay]]@misc$sil <- s
 
+      
       #require(factoextra)
+      #require(RColorBrewer)
+      
       plt.sil <- factoextra::fviz_silhouette(s)
 
       switch(verbose, "TRUE"={print(plt.sil)})
@@ -506,9 +507,6 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 }
 
 
-
-
-
 obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, par.env){
   
   
@@ -561,6 +559,9 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
   
   
 }
+
+
+
 
 
 
