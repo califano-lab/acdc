@@ -18,7 +18,6 @@ SAClustering(
   type.fun = "mean.silhouette",
   control = NULL,
   verbose = TRUE,
-  final = TRUE,
   plot = FALSE,
   diagnostics = FALSE,
   rng.seeds = c(1234, 0)
@@ -67,27 +66,25 @@ optimization of \code{type.fun}.}
 
 \item{verbose}{Whether to print output of each function call. Default is \code{TRUE}.}
 
-\item{final}{Whether \code{SAClustering()} should include a Seurat object with optimal clustering
-results stored under \code{seurat_clusters} (thus overwritting pre-existent ones).}
-
 \item{plot}{Whether to plot outcomes from clustering.}
 
 \item{diagnostics}{whether to print the outcomes of \code{FindNeighbors} and \code{FindClusters} at each function call. Default is \code{FALSE}.}
 
 \item{rng.seeds}{Seeds of the random number generators. The first element is used in \code{GenSA}, the second element is \code{FindClusters}.}
+
+\item{final}{Whether \code{SAClustering()} should include a Seurat object with optimal clustering
+results stored under \code{seurat_clusters} (thus overwritting pre-existent ones).}
 }
 \value{
-Returns a list with the following fields:
+Returns an object of class Seurat with the with optimal clustering solution stored in the metadata \code{seurat_clusters}, the
+corresponding \code{silhouette} object stored in \code{Seurat_object[[assay]]@misc$sil} and a list containing  the history of the optimization
+algorithm stored in \code{Seurat_object[[assay]]@misc$SA.history}. The list contains the following fields:
 \itemize{
 \item \code{optim.par} parameters corresponding to the optimal clustering solution obtained by generalized simulated annealing
 \item  \code{optim.value} optimal value of the objective function
 \item \code{trace.mat} matrix collecting the history of the algorithm, as produced by the GenSA package.
 \item \code{num.evaluations} number of times the objective function is evaluated
 \item \code{par.history} matrix collecting resolution, number of nearest neighbors, number of clusters and objective
-\item \code{Seurat_object} copy of the input argument S.obj with optimal clustering solution stored in \code{seurat_clusters} and the
-corresponding \code{silhouette} object stored in \code{Seurat_object[[assay]]@misc$sil} .
-
-Returned only if \code{final = TRUE}.
 }
 }
 \description{

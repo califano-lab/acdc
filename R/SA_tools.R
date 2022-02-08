@@ -47,7 +47,9 @@
 #' @param plot Whether to plot outcomes from clustering.
 #' @param rng.seeds Seeds of the random number generators. The first element is used in `GenSA`, the second element is `FindClusters`.
 #'
-#' @return Returns a list with the following fields:
+#' @return Returns an object of class Seurat with the with optimal clustering solution stored in the metadata `seurat_clusters`, the
+#' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` and a list containing  the history of the optimization 
+#' algorithm stored in `Seurat_object[[assay]]@misc$SA.history`. The list contains the following fields:
 #' \itemize{
 #' \item `optim.par` parameters corresponding to the optimal clustering solution obtained by generalized simulated annealing
 #' \item  `optim.value` optimal value of the objective function
@@ -55,10 +57,6 @@
 #' \item `num.evaluations` number of times the objective function is evaluated
 #' \item `par.history` matrix collecting resolution, number of nearest neighbors, number of clusters and objective
 #  function at each function call
-#' \item `Seurat_object` copy of the input argument S.obj with optimal clustering solution stored in `seurat_clusters` and the
-#' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` .
-#'
-#' Returned only if `final = TRUE`.
 #' }
 #'
 #' @note Add notes
@@ -128,7 +126,7 @@
 
 SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NULL, assay="RNA", slot="scale.data", reduction=TRUE,
                         reduction.slot="pca", optimize.pcs=FALSE, clust.alg=1, type.fun="mean.silhouette",
-                         control=NULL, verbose=TRUE, final=TRUE, plot=FALSE, diagnostics=FALSE, rng.seeds=c(1234,0))
+                         control=NULL, verbose=TRUE, plot=FALSE, diagnostics=FALSE, rng.seeds=c(1234,0))
   {
 
   ######SA
@@ -295,12 +293,15 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   clustering.optimization$par.history <- par.env$par.history
 
 
-  if (final == TRUE){ # compute clustering using parameters from the optimization routine
+  
+  ###### 
+  # Compute final clustering parameters
+  
 
-    x <- out.SA$par
+  x <- out.SA$par
 
 
-    if (reduction==FALSE) { # original features
+  if (reduction==FALSE) { # original features
 
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
@@ -323,11 +324,11 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                 modularity.fxn=1,
                                 random.seed=rng.seeds[2],
                                 algorithm=clust.alg)
-    )
+  )
 
-    } else if (reduction==TRUE) { # principal components
+  } else if (reduction==TRUE) { # principal components
 
-      if (optimize.pcs==FALSE) {
+    if (optimize.pcs==FALSE) {
       S.obj <- Seurat::FindNeighbors(object=S.obj,
                                      reduction="pca",
                                      verbose = diagnostics,
@@ -336,7 +337,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                      dims=1:numPCs,
                                      compute.SNN = TRUE)
 
-      } else if (optimize.pcs==TRUE) {
+    } else if (optimize.pcs==TRUE) {
         
         S.obj <- Seurat::FindNeighbors(object=S.obj,
                                        reduction="pca",
@@ -346,7 +347,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                        dims=1:x[3],
                                        compute.SNN = TRUE)
         
-      }
+    }
       
       
       names(S.obj@graphs) <- c("SA_nn","SA_snn")
@@ -359,37 +360,26 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                     random.seed=rng.seeds[2],
                                     algorithm=clust.alg)
 
-    }
 
+  }
 
+     Seurat::Idents(S.obj) <- "seurat_clusters"
 
+     # Displays silhouette plot
 
-
-    Seurat::Idents(S.obj) <- "seurat_clusters"
-
-    # Displays silhouette plot
-
-      s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
+     s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
       S.obj[[assay]]@misc$sil <- s
 
       #require(factoextra)
       plt.sil <- factoextra::fviz_silhouette(s)
 
-          
       switch(verbose, "TRUE"={print(plt.sil)})
           
     
-    clustering.optimization$Seurat_object <- S.obj
+      S.obj[[assay]]@misc$SA.history <- clustering.optimization
 
-  }
-
-
-
-
-
-
- return(clustering.optimization)
+      return(S.obj)
 
 
 
@@ -519,7 +509,6 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
 
 
-
 obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, par.env){
   
   
@@ -572,10 +561,6 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
   
   
 }
-
-
-
-
 
 
 
