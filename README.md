@@ -25,7 +25,6 @@ devtools::install_github("LucaZanella15/silhClust")
 # Code
 
 1. (Add ... to all functions (where needed) )
-3. (RunTime and other parameters added to the output )
 4. List of negative clusters (Thibshirani)
 5. (Add automatic computation of PCA in the tool? )
 6. ( Add progress bar in situations where useful )
@@ -38,6 +37,7 @@ devtools::install_github("LucaZanella15/silhClust")
 # Others
 1. Colors silhouette
 2. if control = NULL, choose fast action, i.e. default parameters for fast solution (to be decided after some tests) 
+3. (RunTime and other parameters added to the output )
 
 
 
