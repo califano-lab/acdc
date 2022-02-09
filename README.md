@@ -47,6 +47,7 @@ devtools::install_github("LucaZanella15/silhClust")
 # Paper
 3 datasets: fair comparison between grid search and SAClustering: focus on time and spanned solutions.
   - benchmark (e.g. pbmc3k)
+  /sdqw 
   - large dataset
   - dataset used in two other papers
   
