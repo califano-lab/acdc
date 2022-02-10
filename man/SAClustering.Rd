@@ -20,6 +20,7 @@ SAClustering(
   verbose = TRUE,
   plot = FALSE,
   diagnostics = FALSE,
+  lq = 0,
   rng.seeds = c(1234, 0)
 )
 }
@@ -74,6 +75,8 @@ optimization of \code{type.fun}.}
 
 \item{final}{Whether \code{SAClustering()} should include a Seurat object with optimal clustering
 results stored under \code{seurat_clusters} (thus overwritting pre-existent ones).}
+
+\item{lg}{threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.}
 }
 \value{
 Returns an object of class Seurat with the with optimal clustering solution stored in the metadata \code{seurat_clusters}, the

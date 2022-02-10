@@ -19,12 +19,12 @@
 #' @param par.init A vector containing the initial values for the optimization parameters. First and second element
 #' refer the the initial value of the resolution and number of nearest-neighbors, respectively. Values must be
 #' within in the range specified by `res.range` and `NN.range`. If `optimize.pcs` is `TRUE`, a third element (integer) must be provided, as the
-#' initialization parameter for the number of principal components. This value must be 
+#' initialization parameter for the number of principal components. This value must be
 #' @param assay Assay to use in construction of (S)NN. Default is `"RNA"`; used only when `reduction` is `FALSE`
 #' @param slot Slot to use in construction of (S)NN. Default is `scale.data`; used only when `reduction` is `FALSE`
 #' @param reduction.slot reduction slot to use if `reduction` is set to `TRUE`, ignored otherwise. Default is `"pca"`
 #' @param optimize.pcs whether to optimize on the number of principal components in addition to the number of nearest neighbors and resolution.
-#' Used only if `reduction = TRUE`. Default is `FALSE`. 
+#' Used only if `reduction = TRUE`. Default is `FALSE`.
 #' @param clust.alg Algorithm for modularity optimization (input to `Seurat::FindClusters`). `1` = Louvain (default); `2` = Louvain
 #' with multilevel refinement; `3` = SLM; `4` = Leiden (requires the leidenalg python). See `Seurat::FindClusters()`
 #' for further details.
@@ -45,10 +45,11 @@
 #' @param final Whether `SAClustering()` should include a Seurat object with optimal clustering
 #' results stored under `seurat_clusters` (thus overwritting pre-existent ones).
 #' @param plot Whether to plot outcomes from clustering.
+#' @param lg threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.
 #' @param rng.seeds Seeds of the random number generators. The first element is used in `GenSA`, the second element is `FindClusters`.
 #'
 #' @return Returns an object of class Seurat with the with optimal clustering solution stored in the metadata `seurat_clusters`, the
-#' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` and a list containing  the history of the optimization 
+#' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` and a list containing  the history of the optimization
 #' algorithm stored in `Seurat_object[[assay]]@misc$SA.history`. The list contains the following fields:
 #' \itemize{
 #' \item `optim.par` parameters corresponding to the optimal clustering solution obtained by generalized simulated annealing
@@ -126,7 +127,7 @@
 
 SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NULL, assay="RNA", slot="scale.data", reduction=TRUE,
                         reduction.slot="pca", optimize.pcs=FALSE, clust.alg=1, type.fun="mean.silhouette",
-                         control=NULL, verbose=TRUE, plot=FALSE, diagnostics=FALSE, rng.seeds=c(1234,0))
+                         control=NULL, verbose=TRUE, plot=FALSE, diagnostics=FALSE, lq=0, rng.seeds=c(1234,0))
   {
 
   ######SA
@@ -203,17 +204,17 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   par.env <- new.env() # to store par values when parent and children functions communicate
 
   par.env$fn.call <-0
-  
-  
+
+
   if (optimize.pcs==FALSE){
     npar.opt <- 2
   } else if (optimize.pcs==TRUE) {
     npar.opt <- 3
-  } 
-    
+  }
+
   assign("par.history", rep(x=0,times=npar.opt+2), envir=par.env)
-  
-  
+
+
  set.seed(rng.seeds[1])
   cat("Optimizing ",type.fun," using generalized simulated annealing. Reduction set to ", as.character(reduction), ".\n" )
 
@@ -225,7 +226,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                            lower=lower,
                            upper=upper,
                            control = control,
-                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, par.env) # other parameters
+                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env) # other parameters
 
   } else if (reduction==TRUE) {
 
@@ -235,51 +236,51 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, par.env) # other parameters
-    
+                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env) # other parameters
+
     } else if (optimize.pcs==TRUE) {
-        
+
       lower <- c(lower,1/numPCs) # add min number PCs (frac)
       upper <- c(upper,numPCs/numPCs) # add max number of PCs (frac)
-      
-    
-      
-      
+
+
+
+
       out.SA <- GenSA::GenSA(fn=obj.reduction.pcs,
                              par=par.init,
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, par.env) # other parameters
-      
+                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, lq, par.env) # other parameters
+
     } else {
-      
+
       stop("optimize.pcs must be logical.")
-    
+
     }
 
 
-      
+
   }
 
 
 
 
   par.env$par.history <- par.env$par.history[-1,]
-  
+
   if (optimize.pcs==FALSE) {
-    
+
     out.SA$par[2] <- as.integer(floor(out.SA$par[2]*NN.range[2]))
     colnames(par.env$par.history) <- c("res", "NN", "num.clusters","obj fun")
-    
+
   } else if (optimize.pcs==TRUE) {
-    
+
     out.SA$par[2] <- as.integer(floor(out.SA$par[2]*NN.range[2]))
     out.SA$par[3] <- as.integer(floor(out.SA$par[3]*numPCs))
     colnames(par.env$par.history) <- c("res", "NN", "PCs", "num.clusters","obj fun")
 
   }
-  
+
 
   cat("Optimization completed.\nCall functions", par.env$fn.call, "times.\n")
 
@@ -293,10 +294,10 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   clustering.optimization$par.history <- par.env$par.history
 
 
-  
-  ###### 
+
+  ######
   # Compute final clustering parameters
-  
+
 
   x <- out.SA$par
 
@@ -337,7 +338,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                      compute.SNN = TRUE)
 
     } else if (optimize.pcs==TRUE) {
-        
+
         S.obj <- Seurat::FindNeighbors(object=S.obj,
                                        reduction="pca",
                                        verbose = diagnostics,
@@ -345,7 +346,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                                        annoy.metric = "euclidean",
                                        dims=1:x[3],
                                        compute.SNN = TRUE)
-        
+
     }
 
       names(S.obj@graphs) <- c("SA_nn","SA_snn")
@@ -367,17 +368,23 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
      s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
+
+     sil_neg <- sapply( unique(s[,"cluster"]),
+                        function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
+
+
+
       S.obj[[assay]]@misc$sil <- s
 
-      
+
       #require(factoextra)
       #require(RColorBrewer)
-      
+
       plt.sil <- factoextra::fviz_silhouette(s)
 
       switch(verbose, "TRUE"={print(plt.sil)})
-          
-    
+
+
       S.obj[[assay]]@misc$SA.history <- clustering.optimization
 
       return(S.obj)
@@ -389,7 +396,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
 
 
-obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, rng.seeds, par.env){
+obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, rng.seeds, lq, par.env){
 
   # x are the parameters SA is optimizing over
   # first element in x is resolution value, second element is num NN
@@ -438,7 +445,10 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
   if (nlevels(S.obj$seurat_clusters) == 1){
     obj.fn <- -1
-    }
+  }
+
+  sil_neg <- sapply( unique(s[,"cluster"]),
+                     function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
 
 
   obj.fn <- -obj.fn # -(obj.fn) for optimization
@@ -453,7 +463,8 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 }
 
 
-obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, par.env){
+
+obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env){
 
 
   # describe inputs to all function
@@ -488,9 +499,15 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
+
   obj.fn <- obj.functions(sil=s,type.fun=type.fun)
 
   if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
+
+
+  sil_neg <- sapply( unique(s[,"cluster"]),
+                     function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
+
 
 
   obj.fn <- -obj.fn # -(obj.fn) for optimization
@@ -507,15 +524,17 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 }
 
 
-obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, par.env){
-  
-  
+
+
+obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env){
+
+
   # describe inputs to all function
   par.env$fn.call <- par.env$fn.call + 1
-  
+
   NN <- as.integer(floor(x[2]*NN.range[2]))
   PCs <- as.integer(floor(x[3]*numPCs))
-  
+
   S.obj <- Seurat::FindNeighbors(object=S.obj,
                                  reduction="pca",
                                  verbose = diagnostics,
@@ -523,9 +542,9 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
                                  annoy.metric = "euclidean",
                                  dims=1:PCs,
                                  compute.SNN = TRUE)
-  
+
   names(S.obj@graphs) <- c("SA_nn","SA_snn")
-  
+
   S.obj <- Seurat::FindClusters(object=S.obj,
                                 graph.name="SA_snn",
                                 resolution=x[1],
@@ -533,35 +552,37 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
                                 modularity.fxn=1,
                                 random.seed=rng.seeds[2],
                                 algorithm=clust.alg)
-  
-  
-  
+
+
+
   num_clusts <- nlevels(S.obj$seurat_clusters)
-  
+
   if (num_clusts == 1) {return(1)}
-  
+
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
-  
+
+
   obj.fn <- obj.functions(sil=s,type.fun=type.fun)
-  
+
   if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
-  
-  
+
+
+  sil_neg <- sapply( unique(s[,"cluster"]),
+                     function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
+
+
   obj.fn <- -obj.fn # -(obj.fn) for optimization
-  
+
   par.env$par.history <- rbind(par.env$par.history, c(x[1],NN,PCs,num_clusts,obj.fn))
-  
+
   switch(verbose, "TRUE"={cat(c(x[1],NN,PCs,num_clusts,obj.fn),"\n")})
-  
-  
-  
+
+
+
   return(obj.fn)
-  
-  
+
+
 }
-
-
-
 
 
 
