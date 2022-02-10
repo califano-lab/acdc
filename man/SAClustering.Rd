@@ -123,7 +123,6 @@ res.range=c(0.1,1),
 NN.range=c(3,15),
 reduction=FALSE,
 verbose=TRUE,
-final=TRUE,
 plot=TRUE)
 }
 
