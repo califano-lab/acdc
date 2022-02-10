@@ -18,6 +18,7 @@ devtools::install_github("LucaZanella15/silhClust")
 # Dependencies
 1. `Seurat`: the code actually integrates with the Seurat pipeline for single cell analysis and uses Seurat functions for graph construction and cell clustering. 
 2. `GenSA`: for optimization based on simulated annealing
+3. `factoextra`: for silhouette analysis
 
 
 --------------------------------------------------------------------------------------------------
