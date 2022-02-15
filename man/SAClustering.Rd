@@ -54,10 +54,11 @@ Used only if \code{reduction = TRUE}. Default is \code{FALSE}.}
 with multilevel refinement; \code{3} = SLM; \code{4} = Leiden (requires the leidenalg python). See \code{Seurat::FindClusters()}
 for further details.}
 
-\item{type.fun}{Objective function to be optimized by Simulated Annealing. Options include: \code{"mean.silhouette"} = mean
+\item{type.fun}{Objective function t o be optimized by Simulated Annealing. Options include: \code{"mean.silhouette"} = mean
 silhouette computed over all cells in the dataset (default); \code{"median.silhouette"} = median silhouette computed over all cells in
 the dataset. \code{"group.mean.silhouette"} = mean of the per-group average silhouettes. \code{"group.median.silhouette"} = mean of the
-per-group median silhouettes.}
+per-group median silhouettes. \code{"generalized.logistic"} = mean of the transformed-silhouette computed using a generalized logistic
+transformation. See vignette for further details.}
 
 \item{control}{List of options for Simulated Annealing. Available options are: \code{maxit}, \code{threshold.stop}, \code{nb.stop.improvement},
 \code{smooth}, \code{max.call}, \code{max.time}, \code{temperature}, \code{visiting.param}, \code{acceptance.param}, \code{verbose},

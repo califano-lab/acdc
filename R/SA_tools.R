@@ -28,10 +28,11 @@
 #' @param clust.alg Algorithm for modularity optimization (input to `Seurat::FindClusters`). `1` = Louvain (default); `2` = Louvain
 #' with multilevel refinement; `3` = SLM; `4` = Leiden (requires the leidenalg python). See `Seurat::FindClusters()`
 #' for further details.
-#' @param type.fun Objective function to be optimized by Simulated Annealing. Options include: `"mean.silhouette"` = mean
+#' @param type.fun Objective function t o be optimized by Simulated Annealing. Options include: `"mean.silhouette"` = mean
 #' silhouette computed over all cells in the dataset (default); `"median.silhouette"` = median silhouette computed over all cells in
 #' the dataset. `"group.mean.silhouette"` = mean of the per-group average silhouettes. `"group.median.silhouette"` = mean of the
-#' per-group median silhouettes.
+#' per-group median silhouettes. `"generalized.logistic"` = mean of the transformed-silhouette computed using a generalized logistic
+#' transformation. See vignette for further details.
 #' @param reduction Logical. Whether to perform silhouette-based optimized clustering using principal components (`TRUE`) or
 #' original variables in the provided `slot` of the Seurat object `assay` (`FALSE`). Setting `reduction` = `TRUE` requires
 #' a `DimReduc` object of name `"pca"` to be present in `S.obj`.
@@ -377,14 +378,22 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
 
       #require(factoextra)
-      #require(RColorBrewer)
+      #require(dplyr)
 
       plt.sil <- factoextra::fviz_silhouette(s)
 
       switch(verbose, "TRUE"={print(plt.sil)})
 
+      plt.sil <- plt.sil$data %>%
+        group_by(cluster) %>%
+        summarise(size = n(),
+                  ave.sil.width=round(mean(sil_width), 2)) %>%
+          as.data.frame()
+
 
       S.obj[[assay]]@misc$SA.history <- clustering.optimization
+
+
 
       return(S.obj)
 
@@ -605,7 +614,21 @@ obj.functions <- function(sil,type.fun="mean.silhouette"){
                      obj.fn <- sapply( unique(s[,"cluster"]),
                                        function(i) median( sil[ sil[,1]==i ,"sil_width"] ) )
                      obj.fn <- mean(obj.fn)
-                   })
+                   },
+                   "generalized.logistic"={
+                      A <- -1 # left asymptote
+                      K <- 1 # right asymptote
+                      M <- 0
+                      C <- 1
+                      Q <- 1
+                      nu <- 1
+
+                      B <- 5
+
+                      obj.fn <- A + (K-A) / (C + Q*exp(-B*(sil[,"sil_width"] - M) ))^(1/nu)
+                      obj.fn <- mean(obj.fn)
+                   }
+                   )
 
   return(obj.fn)
 
