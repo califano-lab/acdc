@@ -133,6 +133,8 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   ######SA
   #require(GenSA)
   #require(Seurat)
+  require(dplyr)
+
 
   cat("Function currently works with Seurat objects consider\n",
   "extending to more generic object types.")
