@@ -43,8 +43,6 @@
 #' optimization of `type.fun`.
 #' @param verbose Whether to print output of each function call. Default is `TRUE`.
 #' @param diagnostics whether to print the outcomes of `FindNeighbors` and `FindClusters` at each function call. Default is `FALSE`.
-#' @param final Whether `SAClustering()` should include a Seurat object with optimal clustering
-#' results stored under `seurat_clusters` (thus overwritting pre-existent ones).
 #' @param plot Whether to plot outcomes from clustering.
 #' @param lg threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.
 #' @param rng.seeds Seeds of the random number generators. The first element is used in `GenSA`, the second element is `FindClusters`.

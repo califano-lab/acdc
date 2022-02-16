@@ -74,9 +74,6 @@ optimization of \code{type.fun}.}
 
 \item{rng.seeds}{Seeds of the random number generators. The first element is used in \code{GenSA}, the second element is \code{FindClusters}.}
 
-\item{final}{Whether \code{SAClustering()} should include a Seurat object with optimal clustering
-results stored under \code{seurat_clusters} (thus overwritting pre-existent ones).}
-
 \item{lg}{threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.}
 }
 \value{
