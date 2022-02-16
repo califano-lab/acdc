@@ -145,7 +145,7 @@ GridSearch_pcs <- function(object,
         return(my_sil.df)
       } # End of dopar
     })) # End of print
-    stopCluster(myCluster)
+    parallel::stopCluster(myCluster)
     my_sil.df <- result
 
   }
