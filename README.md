@@ -29,7 +29,9 @@ devtools::install_github("LucaZanella15/silhClust")
 4. List of negative clusters (Thibshirani)
 5. (Add automatic computation of PCA in the tool? )
 7. 100,000 -> 500 -> FastClust2 -> kNN 
+8. Provide additional means to compute distance
 9. Provide additional objective functions
+
 
 
 # Others
