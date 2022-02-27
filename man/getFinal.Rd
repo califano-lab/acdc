@@ -2,7 +2,8 @@
 % Please edit documentation in R/getFinal.R
 \name{getFinal}
 \alias{getFinal}
-\title{Single Cell cluster determination by generalized simulated annealing}
+\title{Single Cell cluster determination using (S)NN modularity optimization algorithm. Useful to retrieve the exactly the same
+solution calculated using SAClustering, without running again the whole optimization routine.}
 \usage{
 getFinal(
   S.obj,

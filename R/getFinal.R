@@ -1,4 +1,6 @@
-#' Single Cell cluster determination by generalized simulated annealing
+#' Single Cell cluster determination using (S)NN modularity optimization algorithm. Useful to retrieve the exactly the same
+#' solution calculated using SAClustering, without running again the whole optimization routine.
+#' 
 #'
 #' @description
 #' `getFinal()` returns clustering solution and the optimal score corresponding to the given input parameters,
