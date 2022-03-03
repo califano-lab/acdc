@@ -33,6 +33,10 @@
 #' the dataset. `"group.mean.silhouette"` = mean of the per-group average silhouettes. `"group.median.silhouette"` = mean of the
 #' per-group median silhouettes. `"generalized.logistic"` = mean of the transformed-silhouette computed using a generalized logistic
 #' transformation. See vignette for further details.
+#' @param weights weights assigned to negative silhouette scores in the calculation of the objective function `type.fun`. Possible values are
+#' either `"unitary"`, i.e. negative silhouette scores are used in the calculation of the objective function as they are, or `"exp"`, i.e.
+#' negative silhouette scores are used in the calculation of the objective function after exponentiation. Default il `"unitary"`.
+#' positive silhouette scores, or `"exp"`,
 #' @param reduction Logical. Whether to perform silhouette-based optimized clustering using principal components (`TRUE`) or
 #' original variables in the provided `slot` of the Seurat object `assay` (`FALSE`). Setting `reduction` = `TRUE` requires
 #' a `DimReduc` object of name `"pca"` to be present in `S.obj`.
@@ -43,10 +47,8 @@
 #' optimization of `type.fun`.
 #' @param verbose Whether to print output of each function call. Default is `TRUE`.
 #' @param diagnostics whether to print the outcomes of `FindNeighbors` and `FindClusters` at each function call. Default is `FALSE`.
-#' @param plot Whether to plot outcomes from clustering.
-#' @param lg threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.
+#' @param lq threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.
 #' @param rng.seeds Seeds of the random number generators. The first element is used in `GenSA`, the second element is `FindClusters`.
-#'
 #' @return Returns an object of class Seurat with the with optimal clustering solution stored in the metadata `seurat_clusters`, the
 #' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` and a list containing  the history of the optimization
 #' algorithm stored in `Seurat_object[[assay]]@misc$SA.history`. The list contains the following fields:
@@ -82,8 +84,7 @@
 #' res.range=c(0.1,1),
 #' NN.range=c(3,15),
 #' reduction=FALSE,
-#' verbose=TRUE,
-#' plot=TRUE)
+#' verbose=TRUE)
 #'}
 #'
 #'
@@ -98,8 +99,7 @@
 #' res.range=c(0.1,1),
 #' NN.range=c(3,15),
 #' reduction=TRUE,
-#' control=settings,
-#' plot=FALSE)
+#' control=settings)
 #'}
 #'
 #'
@@ -124,8 +124,8 @@
 
 
 SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NULL, assay="RNA", slot="scale.data", reduction=TRUE,
-                        reduction.slot="pca", optimize.pcs=FALSE, clust.alg=1, type.fun="mean.silhouette",
-                         control=NULL, verbose=TRUE, plot=FALSE, diagnostics=FALSE, lq=0, rng.seeds=c(1234,0))
+                        reduction.slot="pca", optimize.pcs=FALSE, clust.alg=1, type.fun="mean.silhouette", weights="unitary",
+                         control=NULL, verbose=TRUE, diagnostics=FALSE, lq=0, rng.seeds=c(1234,0))
   {
 
   ######SA
@@ -141,6 +141,9 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
   cat("Add other distance types rather than the sole correlation distance.\n",
       "Add possibility to personalize also the number of features that can be used within an assay.\n")
+
+
+  cat("Consider restoring plot option.\n")
 
   # Process inputs to function
 
@@ -226,7 +229,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                            lower=lower,
                            upper=upper,
                            control = control,
-                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env) # other parameters
+                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights) # other parameters
 
   } else if (reduction==TRUE) {
 
@@ -236,7 +239,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env) # other parameters
+                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights) # other parameters
 
     } else if (optimize.pcs==TRUE) {
 
@@ -251,7 +254,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, lq, par.env) # other parameters
+                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, lq, par.env, weights) # other parameters
 
     } else {
 
@@ -404,7 +407,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
 
 
-obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, rng.seeds, lq, par.env){
+obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, rng.seeds, lq, par.env, weights){
 
   # x are the parameters SA is optimizing over
   # first element in x is resolution value, second element is num NN
@@ -449,7 +452,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
-  obj.fn <- obj.functions(sil=s,type.fun=type.fun)
+  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
 
   if (nlevels(S.obj$seurat_clusters) == 1){
     obj.fn <- -1
@@ -472,7 +475,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
 
 
-obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env){
+obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights){
 
 
   # describe inputs to all function
@@ -508,7 +511,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
 
-  obj.fn <- obj.functions(sil=s,type.fun=type.fun)
+  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
 
   if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
 
@@ -534,7 +537,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
 
 
-obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env){
+obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights){
 
 
   # describe inputs to all function
@@ -570,7 +573,7 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
 
-  obj.fn <- obj.functions(sil=s,type.fun=type.fun)
+  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
 
   if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
 
@@ -596,7 +599,14 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
 
 
 
-obj.functions <- function(sil,type.fun="mean.silhouette"){
+obj.functions <- function(sil,type.fun="mean.silhouette",weights="unitary"){
+
+
+  if (weights=="exp"){
+      neg.sil <- (sil[,"sil_width"] < 0)
+      sil[neg.sil,"sil_width"] <- -exp(abs(sil[neg.sil,"sil_width"]))
+  }
+
 
   obj.fn <- switch(type.fun,
                    "mean.silhouette"={

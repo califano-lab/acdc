@@ -16,9 +16,9 @@ SAClustering(
   optimize.pcs = FALSE,
   clust.alg = 1,
   type.fun = "mean.silhouette",
+  weights = "unitary",
   control = NULL,
   verbose = TRUE,
-  plot = FALSE,
   diagnostics = FALSE,
   lq = 0,
   rng.seeds = c(1234, 0)
@@ -60,6 +60,11 @@ the dataset. \code{"group.mean.silhouette"} = mean of the per-group average silh
 per-group median silhouettes. \code{"generalized.logistic"} = mean of the transformed-silhouette computed using a generalized logistic
 transformation. See vignette for further details.}
 
+\item{weights}{weights assigned to negative silhouette scores in the calculation of the objective function \code{type.fun}. Possible values are
+either \code{"unitary"}, i.e. negative silhouette scores are used in the calculation of the objective function as they are, or \code{"exp"}, i.e.
+negative silhouette scores are used in the calculation of the objective function after exponentiation. Default il \code{"unitary"}.
+positive silhouette scores, or \code{"exp"},}
+
 \item{control}{List of options for Simulated Annealing. Available options are: \code{maxit}, \code{threshold.stop}, \code{nb.stop.improvement},
 \code{smooth}, \code{max.call}, \code{max.time}, \code{temperature}, \code{visiting.param}, \code{acceptance.param}, \code{verbose},
 \code{simple.function}, \code{trace.mat}, \code{seed}. See Gubian el al. (2018) https://cran.r-project.org/web/packages/GenSA/GenSA.pdf for the
@@ -68,13 +73,11 @@ optimization of \code{type.fun}.}
 
 \item{verbose}{Whether to print output of each function call. Default is \code{TRUE}.}
 
-\item{plot}{Whether to plot outcomes from clustering.}
-
 \item{diagnostics}{whether to print the outcomes of \code{FindNeighbors} and \code{FindClusters} at each function call. Default is \code{FALSE}.}
 
-\item{rng.seeds}{Seeds of the random number generators. The first element is used in \code{GenSA}, the second element is \code{FindClusters}.}
+\item{lq}{threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.}
 
-\item{lg}{threshold for low quality cell assignment to the given cluster. Just, informative; it does not impact the calculation.}
+\item{rng.seeds}{Seeds of the random number generators. The first element is used in \code{GenSA}, the second element is \code{FindClusters}.}
 }
 \value{
 Returns an object of class Seurat with the with optimal clustering solution stored in the metadata \code{seurat_clusters}, the
@@ -120,8 +123,7 @@ clust.optimization <- SAClustering(S.obj=pbmc3k.final,
 res.range=c(0.1,1),
 NN.range=c(3,15),
 reduction=FALSE,
-verbose=TRUE,
-plot=TRUE)
+verbose=TRUE)
 }
 
 
@@ -136,8 +138,7 @@ clust.optimization <- SAClustering(S.obj=pbmc3k.final,
 res.range=c(0.1,1),
 NN.range=c(3,15),
 reduction=TRUE,
-control=settings,
-plot=FALSE)
+control=settings)
 }
 
 
