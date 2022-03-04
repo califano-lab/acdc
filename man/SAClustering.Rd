@@ -62,8 +62,7 @@ transformation. See vignette for further details.}
 
 \item{weights}{weights assigned to negative silhouette scores in the calculation of the objective function \code{type.fun}. Possible values are
 either \code{"unitary"}, i.e. negative silhouette scores are used in the calculation of the objective function as they are, or \code{"exp"}, i.e.
-negative silhouette scores are used in the calculation of the objective function after exponentiation. Default il \code{"unitary"}.
-positive silhouette scores, or \code{"exp"},}
+negative silhouette scores are used in the calculation of the objective function after exponentiation. Default is \code{"unitary"}.}
 
 \item{control}{List of options for Simulated Annealing. Available options are: \code{maxit}, \code{threshold.stop}, \code{nb.stop.improvement},
 \code{smooth}, \code{max.call}, \code{max.time}, \code{temperature}, \code{visiting.param}, \code{acceptance.param}, \code{verbose},

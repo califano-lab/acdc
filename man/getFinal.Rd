@@ -17,6 +17,7 @@ getFinal(
   verbose = FALSE,
   clust.alg = 1,
   type.fun = "mean.silhouette",
+  weights = "unitary",
   rng.seed = 0
 )
 }
@@ -51,6 +52,10 @@ silhouette computed over all cells in the dataset (default); \code{"median.silho
 the dataset. \code{"group.mean.silhouette"} = mean of the per-group average silhouettes. \code{"group.median.silhouette"} = mean of the
 per-group median silhouettes. \code{"generalized.logistic"} = mean of the transformed-silhouette computed using a generalized logistic
 transformation. See vignette for further details.}
+
+\item{weights}{weights assigned to negative silhouette scores in the calculation of the objective function \code{type.fun}. Possible values are
+either \code{"unitary"}, i.e. negative silhouette scores are used in the calculation of the objective function as they are, or \code{"exp"}, i.e.
+negative silhouette scores are used in the calculation of the objective function after exponentiation. Default is \code{"unitary"}.}
 
 \item{rng.seed}{Seed of the random number generator used in \code{FindClusters}.}
 }
@@ -94,8 +99,8 @@ verbose=TRUE)
 
 
 \dontrun{
-# Get clustering solution using principal components as features and add the 
-clustering solution to the metadata under the voice `seurat_clusters` and the 
+# Get clustering solution using principal components as features and add the
+clustering solution to the metadata under the voice `seurat_clusters` and the
 median silhouette computed across all cells as the output metric in `S.obj[["RNA"]]@misc$metric`.
 
 S.obj <- getFinal(S.obj=pbmc3k.final,

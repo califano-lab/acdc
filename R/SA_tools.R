@@ -35,8 +35,7 @@
 #' transformation. See vignette for further details.
 #' @param weights weights assigned to negative silhouette scores in the calculation of the objective function `type.fun`. Possible values are
 #' either `"unitary"`, i.e. negative silhouette scores are used in the calculation of the objective function as they are, or `"exp"`, i.e.
-#' negative silhouette scores are used in the calculation of the objective function after exponentiation. Default il `"unitary"`.
-#' positive silhouette scores, or `"exp"`,
+#' negative silhouette scores are used in the calculation of the objective function after exponentiation. Default is `"unitary"`.
 #' @param reduction Logical. Whether to perform silhouette-based optimized clustering using principal components (`TRUE`) or
 #' original variables in the provided `slot` of the Seurat object `assay` (`FALSE`). Setting `reduction` = `TRUE` requires
 #' a `DimReduc` object of name `"pca"` to be present in `S.obj`.
@@ -597,8 +596,8 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
 
 
 
-
-
+#'
+#' @export
 obj.functions <- function(sil,type.fun="mean.silhouette",weights="unitary"){
 
 
