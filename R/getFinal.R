@@ -222,47 +222,53 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
 
   # Displays silhouette plot
 
-  s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
+  if ( nlevels(S.obj$seurat_clusters) > 1 ) {
+
+    s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
 
-  # sil_neg <- sapply( unique(s[,"cluster"]),
-  #                    function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
-  #
+    # sil_neg <- sapply( unique(s[,"cluster"]),
+    #                    function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
+    #
 
 
-  S.obj[[assay]]@misc$sil <- s
-
-
-
-
-
-
-  #require(factoextra)
-  #require(dplyr)
-
-  plt.sil <- factoextra::fviz_silhouette(s)
-
-  switch(verbose, "TRUE"={print(plt.sil)})
-
-  plt.sil <- plt.sil$data %>%
-    group_by(cluster) %>%
-    summarise(size = n(),
-              ave.sil.width=round(mean(sil_width), 2)) %>%
-    as.data.frame()
+    S.obj[[assay]]@misc$sil <- s
 
 
 
 
 
 
+    #require(factoextra)
+    #require(dplyr)
+
+    plt.sil <- factoextra::fviz_silhouette(s)
+
+    switch(verbose, "TRUE"={print(plt.sil)})
+
+    plt.sil <- plt.sil$data %>%
+      group_by(cluster) %>%
+      summarise(size = n(),
+                ave.sil.width=round(mean(sil_width), 2)) %>%
+      as.data.frame()
 
 
-  # Return metric for the given run
-  metric <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
-  names(metric) <- type.fun
 
-  S.obj[[assay]]@misc$metric <- metric
 
+
+
+
+
+    # Return metric for the given run
+    metric <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
+    names(metric) <- type.fun
+
+    S.obj[[assay]]@misc$metric <- metric
+
+  } else {
+    S.obj[[assay]]@misc$sil <- NA
+    S.obj[[assay]]@misc$metric <- NA
+  }
 
   return(S.obj)
 
