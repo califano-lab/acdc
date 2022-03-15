@@ -15,6 +15,7 @@
 #' @param .clust_alg clustering algorithm. Choose among: "Louvain" (default); "Louvain-mult-ref"; "SLM"; "Leiden".
 #' @param free_cores number of cores that are not used for the calculation. Default=2.
 #' @param my_seed random seed for FindClusters. Default=0.
+#' @param weights unitary (unitary) or exponential (exp) way of weighing the silhouette scores. Default=unitary.
 #' @return A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters. \cr
 #'
 #' Columns consist of the following vectors.
@@ -42,82 +43,83 @@ GridSearch_pcs_fast <- function(object,
                            free.cores=2,
                            .type="genes",
                            .dims=NULL,
-                           my_seed=0)
+                           my_seed=0,
+                           weights = "unitary")
 
 {
-  
+
   require(foreach)
   ## Silhouette Analysis ----
   print("Selection of parameters for optimal clustering solution")
-  
+
   {
-    
-    
+
+
     if (Sys.info()['sysname'] == "Windows"){
       clust.type <- "PSOCK"
     } else if ( (Sys.info()['sysname'] == "Linux") | (Sys.info()['sysname'] == "Darwin") ) {
       clust.type <- "FORK"
     }
-    
+
     n_cores <- parallel::detectCores()-free.cores
     myCluster <- parallel::makeCluster(n_cores,type = clust.type)
     doParallel::registerDoParallel(myCluster)
     n_cells_to_subsample <- round(ncol(object)*.pct_cells/100)
     n_cells_to_subsample
-    
-    
+
+
     .clust_alg = switch(.clust_alg,
                         "Louvain"= 1,
                         "Louvain-mult-ref"=2,
                         "SLM"=3,
                         "Leiden"=4)
-    
-    
+
+
     if (.type=="genes"){
       object.dist <- as.matrix(as.dist( 1-cor( object[[assay.name]]@scale.data,method = "pea" )))
     } else if (.type=="PCA"){
       object.dist <- as.matrix(as.dist( 1-cor( t(object@reductions$pca@cell.embeddings),method = "pea" )))
     }
 
-    
+
     print(system.time({
       result <- foreach::foreach( a_knn = .knns, .combine = 'rbind' ) %dopar% {
       # result <- foreach::foreach( a_res = .resolutions, .combine = 'rbind' ) %dopar% { # Iterates using a_res
         # knn = rep( .knns , length(.bootstraps) )
         # bootstrap = rep( .bootstraps, length(.knns) )
         # index <- 1:length(knn)
-        
+
         res = rep( .resolutions , length(.bootstraps) )
         # bootstrap = rep( .bootstraps, length(.resolutions) )
         bootstrap <- c() #rep(NA, length(.resolutions)*length(.bootstraps))
         for(i in 1:length(.bootstraps)){
           bootstrap <- c(bootstrap, rep(i, length(.resolutions)))
         }
-        
+
         index <- 1:length(res)
-        
-        
+
+
         # my_sil.df <- dplyr::tibble( index = index,
         #                             bootstrap = bootstrap,
         #                             knn = knn, # KNN set to values of .knn repeated X bootstraps
         #                             resolution = 0, # Resolutions set to 0
         #                             tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
         #                             sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
-        
-        
+
+
         my_sil.df <- dplyr::tibble( index = index,
                                     bootstrap = bootstrap,
-                                    knn = 0, 
-                                    resolution = res, 
+                                    knn = 0,
+                                    resolution = res,
                                     tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
                                     sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
-        
+
         nrow(my_sil.df)
-        
+
         set.seed(a_knn)
         selected_samples <- sample(colnames(object),size=n_cells_to_subsample,replace=.replace)
         x <- object[ , colnames(object) %in% selected_samples ]
-        
+
         if (.type=="genes"){
           if(.pct_cells < 100){
             x.dist <- as.matrix(as.dist( 1-cor( x[[assay.name]]@scale.data,method = "pea" )))
@@ -147,9 +149,9 @@ GridSearch_pcs_fast <- function(object,
                                      dims=.dims,
                                      compute.SNN = TRUE)
         }
-        
+
         names(x@graphs) <- c("nn", "snn")
-        
+
         for ( a_index in my_sil.df$index )
         {
           set.seed(a_index)
@@ -169,6 +171,10 @@ GridSearch_pcs_fast <- function(object,
           table(x$seurat_clusters)
           if ( nlevels(x$seurat_clusters) == 1 ) next ;
           s <- cluster::silhouette( as.integer(x$seurat_clusters) , x.dist )
+          if (weights=="exp"){
+            neg.sil <- (s[,"sil_width"] < 0)
+            s[neg.sil,"sil_width"] <- -exp(abs(s[neg.sil,"sil_width"]))
+          }
           # pdf( file.path(reports.dir,paste0(“sil-res-“,a_res,“.pdf”)) )
           p <- factoextra::fviz_silhouette(s,print.summary = FALSE)
           y <- sapply( levels(p$data$cluster) , function(i) mean( p$data$sil_width[ p$data$cluster == i ] ) )
@@ -189,6 +195,6 @@ GridSearch_pcs_fast <- function(object,
     })) # End of print
     parallel::stopCluster(myCluster)
     my_sil.df <- result
-    
+
   }
 }
