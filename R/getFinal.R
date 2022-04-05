@@ -87,7 +87,7 @@
 
 getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduction=TRUE,
                      reduction.slot="pca", num.pcs=NULL, verbose=FALSE, clust.alg=1,
-                     type.fun="mean.silhouette",weights="unitary",rng.seed=0)
+                     type.fun="mean.silhouette",weights="unitary",exp_base=2.7182,rng.seed=0)
 
 
 {
@@ -260,7 +260,7 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
 
 
     # Return metric for the given run
-    metric <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
+    metric <- obj.functions(sil=s,type.fun=type.fun,weights=weights,exp_base=exp_base)
     names(metric) <- type.fun
 
     S.obj[[assay]]@misc$metric <- metric

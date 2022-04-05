@@ -44,7 +44,8 @@ GridSearch_pcs_fast <- function(object,
                            .type="genes",
                            .dims=NULL,
                            my_seed=0,
-                           weights = "unitary")
+                           weights = "unitary",
+                           exp_base = 2.718282)
 
 {
 
@@ -173,7 +174,8 @@ GridSearch_pcs_fast <- function(object,
           s <- cluster::silhouette( as.integer(x$seurat_clusters) , x.dist )
           if (weights=="exp"){
             neg.sil <- (s[,"sil_width"] < 0)
-            s[neg.sil,"sil_width"] <- -exp(abs(s[neg.sil,"sil_width"]))
+            # exp_base <- exp(1)
+            s[neg.sil,"sil_width"] <- -1*(exp_base^abs(s[neg.sil,"sil_width"]))
           }
           # pdf( file.path(reports.dir,paste0(“sil-res-“,a_res,“.pdf”)) )
           p <- factoextra::fviz_silhouette(s,print.summary = FALSE)

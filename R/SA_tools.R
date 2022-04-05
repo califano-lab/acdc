@@ -123,7 +123,7 @@
 
 
 SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NULL, assay="RNA", slot="scale.data", reduction=TRUE,
-                        reduction.slot="pca", optimize.pcs=FALSE, clust.alg=1, type.fun="mean.silhouette", weights="unitary",
+                        reduction.slot="pca", optimize.pcs=FALSE, clust.alg=1, type.fun="mean.silhouette", weights="unitary", exp_base = 2.718282,
                          control=NULL, verbose=TRUE, diagnostics=FALSE, lq=0, rng.seeds=c(1234,0))
   {
 
@@ -228,7 +228,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                            lower=lower,
                            upper=upper,
                            control = control,
-                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights) # other parameters
+                           d, S.obj,NN.range, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base) # other parameters
 
   } else if (reduction==TRUE) {
 
@@ -238,7 +238,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights) # other parameters
+                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base) # other parameters
 
     } else if (optimize.pcs==TRUE) {
 
@@ -253,7 +253,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, lq, par.env, weights) # other parameters
+                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, lq, par.env, weights, exp_base) # other parameters
 
     } else {
 
@@ -406,7 +406,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
 
 
-obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, rng.seeds, lq, par.env, weights){
+obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base){
 
   # x are the parameters SA is optimizing over
   # first element in x is resolution value, second element is num NN
@@ -451,7 +451,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
-  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
+  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights,exp_base=exp_base)
 
   if (nlevels(S.obj$seurat_clusters) == 1){
     obj.fn <- -1
@@ -474,7 +474,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
 
 
-obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights){
+obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base){
 
 
   # describe inputs to all function
@@ -510,7 +510,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
 
-  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
+  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights,exp_base=exp_base)
 
   if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
 
@@ -536,7 +536,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
 
 
-obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights){
+obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base){
 
 
   # describe inputs to all function
@@ -572,7 +572,7 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
   s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
 
 
-  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights)
+  obj.fn <- obj.functions(sil=s,type.fun=type.fun,weights=weights,exp_base=exp_base)
 
   if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
 
@@ -598,14 +598,14 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
 
 #'
 #' @export
-obj.functions <- function(sil,type.fun="mean.silhouette",weights="unitary"){
+obj.functions <- function(sil,type.fun="mean.silhouette",weights="unitary",exp_base=2.718282){
 
 
   if (weights=="exp"){
-      neg.sil <- (sil[,"sil_width"] < 0)
-      sil[neg.sil,"sil_width"] <- -exp(abs(sil[neg.sil,"sil_width"]))
+      neg.sil <- (s[,"sil_width"] < 0)
+      # exp_base <- exp(1)
+      s[neg.sil,"sil_width"] <- -1*(exp_base^abs(s[neg.sil,"sil_width"]))
   }
-
 
   obj.fn <- switch(type.fun,
                    "mean.silhouette"={
