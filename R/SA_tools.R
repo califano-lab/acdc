@@ -514,7 +514,6 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
   if (nlevels(S.obj$seurat_clusters) == 1){ obj.fn <- -1 }
 
-
   sil_neg <- sapply( unique(s[,"cluster"]),
                      function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
 
@@ -602,9 +601,9 @@ obj.functions <- function(sil,type.fun="mean.silhouette",weights="unitary",exp_b
 
 
   if (weights=="exp"){
-      neg.sil <- (s[,"sil_width"] < 0)
+      neg.sil <- (sil[,"sil_width"] < 0)
       # exp_base <- exp(1)
-      s[neg.sil,"sil_width"] <- -1*(exp_base^abs(s[neg.sil,"sil_width"]))
+      sil[neg.sil,"sil_width"] <- -1*(exp_base^abs(sil[neg.sil,"sil_width"]))
   }
 
   obj.fn <- switch(type.fun,
