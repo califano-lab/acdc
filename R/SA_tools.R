@@ -619,7 +619,7 @@ obj.functions <- function(sil,type.fun="mean.silhouette",weights="unitary",exp_b
                      obj.fn <- mean(obj.fn)
                    },
                    "group.median.silhouette"={
-                     obj.fn <- sapply( unique(s[,"cluster"]),
+                     obj.fn <- sapply( unique(sil[,"cluster"]),
                                        function(i) median( sil[ sil[,1]==i ,"sil_width"] ) )
                      obj.fn <- mean(obj.fn)
                    },
