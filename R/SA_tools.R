@@ -332,7 +332,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
     if (optimize.pcs==FALSE) {
       S.obj <- Seurat::FindNeighbors(object=S.obj,
-                                     reduction="pca",
+                                     reduction=reduction.slot,
                                      verbose = diagnostics,
                                      k.param = x[2],
                                      annoy.metric = "euclidean",
@@ -342,7 +342,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
     } else if (optimize.pcs==TRUE) {
 
         S.obj <- Seurat::FindNeighbors(object=S.obj,
-                                       reduction="pca",
+                                       reduction=reduction.slot,
                                        verbose = diagnostics,
                                        k.param = x[2],
                                        annoy.metric = "euclidean",
@@ -484,7 +484,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
 
   S.obj <- Seurat::FindNeighbors(object=S.obj,
-                                        reduction="pca",
+                                        reduction=reduction.slot,
                                         verbose = diagnostics,
                                         k.param = NN,
                                         annoy.metric = "euclidean",
@@ -545,7 +545,7 @@ obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg,
   PCs <- as.integer(floor(x[3]*numPCs))
 
   S.obj <- Seurat::FindNeighbors(object=S.obj,
-                                 reduction="pca",
+                                 reduction=reduction.slot,
                                  verbose = diagnostics,
                                  k.param = NN,
                                  annoy.metric = "euclidean",

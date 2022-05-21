@@ -179,7 +179,7 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
 
     if (is.null(num.pcs)) {
       S.obj <- Seurat::FindNeighbors(object=S.obj,
-                                     reduction="pca",
+                                     reduction=reduction.slot,
                                      verbose = verbose,
                                      k.param = NN,
                                      annoy.metric = "euclidean",
@@ -193,7 +193,7 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
       }
 
       S.obj <- Seurat::FindNeighbors(object=S.obj,
-                                     reduction="pca",
+                                     reduction=reduction.slot,
                                      verbose = verbose,
                                      k.param = NN,
                                      annoy.metric = "euclidean",
