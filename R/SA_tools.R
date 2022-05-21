@@ -238,7 +238,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base) # other parameters
+                             d,S.obj,NN.range, reduction.slot, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base) # other parameters
 
     } else if (optimize.pcs==TRUE) {
 
@@ -253,7 +253,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
                              lower=lower,
                              upper=upper,
                              control = control,
-                             d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, lq, par.env, weights, exp_base) # other parameters
+                             d,S.obj,NN.range, reduction.slot, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics,rng.seeds, lq, par.env, weights, exp_base) # other parameters
 
     } else {
 
@@ -474,7 +474,7 @@ obj.features <- function(x,d,S.obj,NN.range, assay.name, clust.alg, type.fun,ver
 
 
 
-obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base){
+obj.reduction <- function(x,d,S.obj,NN.range, reduction.slot, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base){
 
 
   # describe inputs to all function
@@ -535,7 +535,7 @@ obj.reduction <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, typ
 
 
 
-obj.reduction.pcs <- function(x,d,S.obj,NN.range, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base){
+obj.reduction.pcs <- function(x,d,S.obj,NN.range, reduction.slot, numPCs, assay.name, clust.alg, type.fun, verbose, diagnostics, rng.seeds, lq, par.env, weights, exp_base){
 
 
   # describe inputs to all function
