@@ -14,7 +14,7 @@ Remaining functions are not intended to be part of the package
 install.packages("devtools")
 devtools::install_github("LucaZanella15/silhClust")
 ```
-(Currently the repo is still private, therefore take the following action to install:
+(Currently the repo is still private, therefore please take the following action to install:)
 ```
 devtools::install_github("LucaZanella15/silhClust", auth_token="YourToken")
 ```
