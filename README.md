@@ -41,7 +41,7 @@ devtools::install_github("LucaZanella15/silhClust", auth_token="YourToken")
 
 # Others
 1. (Add ... to all functions (where needed) )
-2. Add output in S.obj[[...]]@misc when the algorithm returns one single cluster
+2. Add output in S.obj[[...]]@misc when the algorithm returns one single cluster (to SAClustering, getFinal. Perhaps, Alec, also for the GridSearch if it is conceived in the same way)
 3. Colors silhouette
 4. if control = NULL, choose fast action, i.e. default parameters for fast solution (to be decided after some tests) 
 5. (RunTime and other parameters added to the output )
