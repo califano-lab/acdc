@@ -41,12 +41,13 @@ devtools::install_github("LucaZanella15/silhClust", auth_token="YourToken")
 
 # Others
 1. (Add ... to all functions (where needed) )
-2. Colors silhouette
-3. if control = NULL, choose fast action, i.e. default parameters for fast solution (to be decided after some tests) 
-4. (RunTime and other parameters added to the output )
-5. ( Add progress bar in situations where useful )
-6. (Rename control list)
-7. (Tweak for span larger space when optmizing NN (possibly useful for other parameters) ) 
+2. Add output in S.obj[[...]]@misc when the algorithm returns one single cluster
+3. Colors silhouette
+4. if control = NULL, choose fast action, i.e. default parameters for fast solution (to be decided after some tests) 
+5. (RunTime and other parameters added to the output )
+6. ( Add progress bar in situations where useful )
+7. (Rename control list)
+8. (Tweak for span larger space when optmizing NN (possibly useful for other parameters) ) 
 
 
 
