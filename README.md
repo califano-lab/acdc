@@ -54,7 +54,7 @@ devtools::install_github("LucaZanella15/silhClust", auth_token="YourToken")
 
 
 
-# Paper
+# Manuscript
 3 datasets: fair comparison between grid search and SAClustering: focus on time and spanned solutions.
   - benchmark (e.g. pbmc3k). in iterClust, Ding used: pbmc (public Chromium 10x Genomics), Tirosh (SKCM), Usoskin 2015. (Mouse sensory neuron dataset), Franti et al. 2016 (Dim1024), Gionis 2007 (Aggregation dataset)
   - large dataset
