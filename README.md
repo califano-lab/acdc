@@ -37,6 +37,8 @@ devtools::install_github("LucaZanella15/silhClust", auth_token="YourToken")
 8. Provide additional means to compute distance
 9. Provide additional objective functions
 
+10. For Alec: enlist the new dependencies to be added to the list of Dependencies in this README 
+
 
 
 # Others
@@ -68,7 +70,7 @@ devtools::install_github("LucaZanella15/silhClust", auth_token="YourToken")
 
 
 
-# What comes after the paper
+# What comes after the manuscript
 1. Add Details in help and vignettes
 
 
