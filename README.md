@@ -51,7 +51,8 @@ devtools::install_github("califano-lab/acdc-beta")
 
 # Contacts
 
-Please contact Alexander Wang, Luca Zanella or Alessandro Vasciaveo for doubts regarding this project.__
+Please contact Alexander Wang, Luca Zanella or Alessandro Vasciaveo for doubts regarding this project.  
+
 Alexander Wang - aw3436@cumc.columbia.edu  
 
 Luca Zanella - lz2841@cumc.columbia.edu  
