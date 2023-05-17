@@ -47,3 +47,11 @@ devtools::install_github("califano-lab/acdc-beta")
 2. Satija R, Farrell JA, Gennert D, Schier AF, Regev A (2015). “Spatial reconstruction of single-cell gene expression data.” Nature Biotechnology, 33, 495-502. 
 3. Traag, V.A., Waltman, L. & van Eck, N.J. (2019) From Louvain to Leiden: guaranteeing well-connected communities. Sci Rep 9, 5233. 
 4. Xiang, Y., Gubian, S., Suomela, B.P., & Hoeng, J. (2013). Generalized Simulated Annealing for Global Optimization: The GenSA Package. R J., 5, 13.
+
+
+# Contacts
+
+Please contact Alexander Wang, Luca Zanella or Alessandro Vasciaveo for doubts regarding this project.
+Alexander Wang - aw3436@cumc.columbia.edu
+Luca Zanella - lz2841@cumc.columbia.edu
+Alessandro Vasciaveo - av2729@cumc.columbia.edu
