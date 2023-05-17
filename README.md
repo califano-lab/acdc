@@ -29,17 +29,17 @@ devtools::install_github("califano-lab/acdc-beta")
 ```
 
 
+# Core functions
+1. `SAClustering`: optimizes the clustering solution to find the best set of parameters (k, resolution, etc) using a Simulated Annealing-based optimization 
+2. `GridSearch`: optimizes the clustering solution to find best set of parameters (k, resolution, etc) using a Grid Search 
+3. `getFinal`: returns the optimal clustering solution with a user-defined set of parameters (k, resolution etc). Useful when a set of optimal parameters has been identified by `SAClustering` or `GridSearch`, and one is willing to store the optimal parameters into the Seurat object without re-running an optimization routine.
+
+
 # Dependencies
 1. `Seurat`: the tool is fully integrated with the Seurat pipeline for single cell analysis and leverages Seurat functions for graph construction and cell clustering. 
 2. `GenSA`: for optimization based on simulated annealing
 3. `factoextra`: for silhouette analysis
 4. `foreach`: for parallelization of GridSearch 
-
-
-# Main functions
-1. `SAClustering`: optimizes the clustering solution to find the best set of parameters (k, resolution, etc) using a Simulated Annealing-based optimization 
-2. `GridSearch`: optimizes the clustering solution to find best set of parameters (k, resolution, etc) using a Grid Search 
-3. `getFinal`: returns the optimal clustering solution with a user-defined set of parameters (k, resolution etc). Useful when a set of optimal parameters has been identified by `SAClustering` or `GridSearch`, and one is willing to store the optimal parameters into the Seurat object without re-running an optimization routine.
 
 
 # References
