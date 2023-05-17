@@ -1,11 +1,30 @@
 # acdc
 
-*Annealing* for *Community* *Detection* of *Cell* populations
+**A**utomated **C**ommunity **D**etection* of **Cell** populations
+
+This repo contains the current beta version of ```acdc```, an optimization-based framework to highly automatize clustering of cell populations from scRNA-seq data. 
+The tool is currently **under development** and new deployed as an R package
+
+Deployed as an R package, fully compatible with Seurat
+
+Several graph-based clustering algorithms available
+
+Optimization framework: 
+variables: k, resolution, PCs
+several objective functions, e.g. Silhouette and Entropy
+routines: Grid Search & (Generalized) Simulated Annealing1 	
+
+Allows iteratively sub-clustering cell populations 						
+![image](https://github.com/califano-lab/acdc-beta/assets/92543296/a352924c-296f-4ab2-ae4c-40c54dc0909f)
+
+This 
 choice of the number of clusters by optimization of the silhouette score
 
 SAClustering is the function to run Generalized Simulated Annealing Optimization on Silhouette
 
 Remaining functions are not intended to be part of the package
+
+
 
 
 
