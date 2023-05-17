@@ -14,11 +14,9 @@ Several objective functions are available, including the Silhouette Score (defau
 
 New releases will include new features, including the possibility to iteratively sub-cluster cell populations to find fine grain, biologically sound, clustering solutions.
 
+``` 
+\033[32mSTAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!\033[0m
 ```
-diff 
-STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!
-```
-
 
 
 
