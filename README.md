@@ -1,4 +1,4 @@
-# acdc
+# acdc (beta versions)
 
 **A**utomated **C**ommunity **D**etection of **C**ell populations
 
@@ -51,7 +51,7 @@ devtools::install_github("califano-lab/acdc-beta")
 
 # Contacts
 
-Please contact Alexander Wang, Luca Zanella or Alessandro Vasciaveo for doubts regarding this project.  
+Please contact Alexander Wang, Luca Zanella or Alessandro Vasciaveo for doubts regarding this project (please remember that this project is still under development!).  
 
 Alexander Wang - aw3436@cumc.columbia.edu  
 
