@@ -48,10 +48,11 @@ devtools::install_github("califano-lab/acdc-beta")
 
 
 # References
-1. Blondel, V D, Guillaume, J, Lambiotte, R, Lefebvre, E (2008). Fast unfolding of communities in large networks". Journal of Statistical Mechanics: Theory and Experiment. (10) P10008.
-2. Satija R, Farrell JA, Gennert D, Schier AF, Regev A (2015). “Spatial reconstruction of single-cell gene expression data.” Nature Biotechnology, 33, 495-502. 
-3. Traag, V.A., Waltman, L. & van Eck, N.J. (2019) From Louvain to Leiden: guaranteeing well-connected communities. Sci Rep 9, 5233. 
-4. Xiang, Y., Gubian, S., Suomela, B.P., & Hoeng, J. (2013). Generalized Simulated Annealing for Global Optimization: The GenSA Package. R J., 5, 13.
+1. Kiselev, VY, Andrews, TS, Hemberg, M. (2019) Challenges in unsupervised clustering of single-cell RNA-seq data. Nat Rev Genet 20, 273–282.
+2. Blondel, V D, Guillaume, J, Lambiotte, R, Lefebvre, E (2008). Fast unfolding of communities in large networks". Journal of Statistical Mechanics: Theory and Experiment. (10) P10008.
+3. Satija R, Farrell JA, Gennert D, Schier AF, Regev A (2015). “Spatial reconstruction of single-cell gene expression data.” Nature Biotechnology, 33, 495-502. 
+4. Traag, V.A., Waltman, L. & van Eck, N.J. (2019) From Louvain to Leiden: guaranteeing well-connected communities. Sci Rep 9, 5233. 
+5. Xiang, Y., Gubian, S., Suomela, B.P., & Hoeng, J. (2013). Generalized Simulated Annealing for Global Optimization: The GenSA Package. R J., 5, 13.
 
 
 # Contacts
