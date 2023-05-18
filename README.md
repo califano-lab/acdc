@@ -6,10 +6,10 @@ This repo contains the current beta version of ```acdc```, an optimization-based
 ```acdc``` is currently **under development** and new functionalities will be released, following completion and benchmarking. 
 ```acdc``` is deployed as an R package and fully compatible with ```Seurat```, the main scRNA-seq analysis pipeline in R.
 
-<p align="center">
+<div align="center">
 <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/09feabaf-d868-48d7-b830-933210db6005">
 <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/336ea80f-04a3-48d0-b96b-79d8b205b436">  
-</p>
+</div>
 
 - Several graph-based clustering algorithms are available within ```acdc```, including Leiden and Louvain. 
 - 2 optimization routines for parameter tuning are available, Grid Search and(generalized) Simulated Annealing.
