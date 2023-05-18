@@ -102,9 +102,9 @@ getFinal <- function(
     rng.seed = 0,
     object.dist = NULL
 )
-
+  
 {
-  source("R/SA_tools.R")
+  source("R/sa_tools_multiMetric.R")
   #require(Seurat)
   require(dplyr)
   # Process inputs to function
@@ -277,10 +277,13 @@ getFinal <- function(
     
     
     # Return metric for the given run
-    metric <- obj.functions(sil = s,
+    metric <- obj.functions(S.obj = S.obj,
+                            d = d,
+                            assay.name = assay,
+                            slot = slot,
                             type.fun=type.fun,
-                            weights=SS_weights,
-                            exp_base=SS_exp_base)
+                            SS_weights=SS_weights,
+                            SS_exp_base=SS_exp_base)
     names(metric) <- type.fun
     
     S.obj[[assay]]@misc$metric <- metric
