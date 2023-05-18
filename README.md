@@ -31,7 +31,7 @@ STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!🤘🏾
 2. Run the following commands
 ```
 install.packages("devtools")
-devtools::install_github("califano-lab/acdc-beta")
+devtools::install_github("califano-lab/acdc")
 ```
 3. ... Start playing around! 🎸
 
