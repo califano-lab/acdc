@@ -1,4 +1,4 @@
-# acdc - beta version 🤘
+# acdc 🤘 - beta version 
 
 **A**utomated **C**ommunity **D**etection of **C**ell populations
 
