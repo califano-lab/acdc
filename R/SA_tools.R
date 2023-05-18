@@ -133,16 +133,8 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   require(dplyr)
 
 
-  cat("Function currently works with Seurat objects consider\n",
-  "extending to more generic object types.")
+  cat("This is a beta version. acdc is currently under development!.\n")
 
-  cat("Should I add a ... arguments passed to other methods?\n")
-
-  cat("Add other distance types rather than the sole correlation distance.\n",
-      "Add possibility to personalize also the number of features that can be used within an assay.\n")
-
-
-  cat("Consider restoring plot option.\n")
 
   # Process inputs to function
 

@@ -51,6 +51,9 @@ GridSearch_pcs_fast <- function(object,
 
   require(foreach)
   ## Silhouette Analysis ----
+
+  cat("This is a beta version. acdc is currently under development.\n")
+
   print("Selection of parameters for optimal clustering solution")
 
   {

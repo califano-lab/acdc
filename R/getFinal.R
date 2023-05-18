@@ -102,20 +102,22 @@ getFinal <- function(
     rng.seed = 0,
     object.dist = NULL
 )
-  
+
 {
   source("R/sa_tools_multiMetric.R")
   #require(Seurat)
   require(dplyr)
   # Process inputs to function
-  
+
+  cat("This is a beta version. The tool is currently under development!\n")
+
   if(is.null(object.dist)){
     if (reduction==FALSE){# use original features
-      
+
       X <- switch(slot,
                   "counts"={
                     X <- as.matrix(S.obj[[assay]]@counts)
-                    
+
                   },
                   "data"={
                     X <- as.matrix(S.obj[[assay]]@data)
@@ -123,33 +125,33 @@ getFinal <- function(
                   "scale.data"={
                     X <- S.obj[[assay]]@scale.data
                   })
-      
+
       if (IsMatrixEmpty(X)==TRUE) {
-        
+
         stop("The provided slot is empty. Check combination of assay")
-        
+
       }
-      
-      
+
+
       cell.dims <- 2 # cells are along columns
       d <- sqrt(1 - stats::cor(X))
-      
-      
+
+
     } else if (reduction==TRUE){
-      
+
       # use principal components
-      
+
       X <- S.obj@reductions[[reduction.slot]]@cell.embeddings
       numPCs <- ncol(X)
       cell.dims <- 1 # cells are along rows
       d <- sqrt(1 - stats::cor(t(X)))
-      
+
     } else {
-      
+
       stop("reduction must be logical.")
-      
+
     }
-    
+
     rm(X)
   } else {
     d <- object.dist
@@ -160,15 +162,15 @@ getFinal <- function(
       cell.dims <- 1 # cells are along rows
     }
   }
-  
-  
-  
-  
+
+
+
+
   ######
   # Compute solution with optimal clustering parameters and return Seurat object
-  
+
   if (reduction==FALSE) { # original features
-    
+
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
                                           verbose = verbose,
@@ -178,10 +180,10 @@ getFinal <- function(
                                           #reduction=NULL,
                                           #assay=assay.name,
                                           compute.SNN = TRUE)
-    
-    
+
+
     names(S.obj@graphs) <- c("opt_nn","opt_snn")
-    
+
     suppressWarnings(
       S.obj <- Seurat::FindClusters(object=S.obj,
                                     graph.name="opt_snn",
@@ -191,9 +193,9 @@ getFinal <- function(
                                     random.seed=rng.seed,
                                     algorithm=clust.alg)
     )
-    
+
   } else if (reduction==TRUE) { # principal components
-    
+
     if (is.null(num.pcs)) {
       S.obj <- Seurat::FindNeighbors(object=S.obj,
                                      reduction=reduction.slot,
@@ -202,13 +204,13 @@ getFinal <- function(
                                      annoy.metric = "euclidean",
                                      dims=1:numPCs,
                                      compute.SNN = TRUE)
-      
+
     } else if (is.null(num.pcs) == FALSE) {
-      
+
       if (num.pcs>numPCs){
         stop("The provided number of principal components (num.pcs) is greater than the number of principal component in the reduction slot.\n")
       }
-      
+
       S.obj <- Seurat::FindNeighbors(object=S.obj,
                                      reduction=reduction.slot,
                                      verbose = verbose,
@@ -216,11 +218,11 @@ getFinal <- function(
                                      annoy.metric = "euclidean",
                                      dims=1:num.pcs,
                                      compute.SNN = TRUE)
-      
+
     }
-    
+
     names(S.obj@graphs) <- c("opt_nn","opt_snn")
-    
+
     S.obj <- Seurat::FindClusters(object=S.obj,
                                   graph.name="opt_snn",
                                   resolution=res,
@@ -228,54 +230,54 @@ getFinal <- function(
                                   modularity.fxn=1,
                                   random.seed=rng.seed,
                                   algorithm=clust.alg)
-    
-    
+
+
   }
-  
-  
-  
-  
+
+
+
+
   Seurat::Idents(S.obj) <- "seurat_clusters"
-  
+
   # Displays silhouette plot
-  
+
   if ( nlevels(S.obj$seurat_clusters) > 1 ) {
-    
+
     s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
-    
-    
+
+
     # sil_neg <- sapply( unique(s[,"cluster"]),
     #                    function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
     #
-    
-    
+
+
     S.obj[[assay]]@misc$sil <- s
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     #require(factoextra)
     #require(dplyr)
-    
+
     # plt.sil <- factoextra::fviz_silhouette(s,print.summary = FALSE)
-    
+
     # switch(verbose, "TRUE"={print(plt.sil)})
-    
+
     # plt.sil <- plt.sil$data %>%
     #   group_by(cluster) %>%
     #   summarise(size = n(),
     #             ave.sil.width=round(mean(sil_width), 2)) %>%
     #   as.data.frame()
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
     # Return metric for the given run
     metric <- obj.functions(S.obj = S.obj,
                             d = d,
@@ -285,16 +287,16 @@ getFinal <- function(
                             SS_weights=SS_weights,
                             SS_exp_base=SS_exp_base)
     names(metric) <- type.fun
-    
+
     S.obj[[assay]]@misc$metric <- metric
-    
+
   } else {
     S.obj[[assay]]@misc$sil <- NA
     S.obj[[assay]]@misc$metric <- NA
   }
-  
+
   return(S.obj)
-  
-  
-  
+
+
+
 }
