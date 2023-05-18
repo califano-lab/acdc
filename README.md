@@ -1,4 +1,4 @@
-# acdc - beta version
+# acdc - beta version 🤘
 
 **A**utomated **C**ommunity **D**etection of **C**ell populations
 
@@ -15,8 +15,9 @@ Several objective functions are available, including the Silhouette Score (defau
 New releases will expand functionalities to new features, including the possibility to iteratively sub-cluster cell populations to find fine grain and biologically meaningful clustering solutions.
 
 ``` 
-STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!
+STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!🤘🏾
 ```
+<img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/09feabaf-d868-48d7-b830-933210db6005">
 
 
 
@@ -27,7 +28,7 @@ STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!
 install.packages("devtools")
 devtools::install_github("califano-lab/acdc-beta")
 ```
-
+3. ... Start playing! 🎸
 
 # Core functions
 1. `SAClustering`: optimizes the clustering solution to find the best set of parameters (k, resolution, etc) using a Simulated Annealing-based optimization 
