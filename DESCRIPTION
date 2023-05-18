@@ -1,5 +1,5 @@
-Package: silhClust
-Title: What the Package Does (One Line, Title Case)
+Package: acdc-beta
+Title: Optimization framework for unsupervised clustering of scRNA-seq data
 Version: 0.0.0.9000
 Authors@R: 
     person("Luca", "Zanella", , "first.last@example.com", role = c("aut", "cre"),
