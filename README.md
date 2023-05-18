@@ -8,8 +8,8 @@ This repo contains the current beta version of ```acdc```, an optimization-based
 
 <div align="center">
   <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/09feabaf-d868-48d7-b830-933210db6005">
-  <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/336ea80f-04a3-48d0-b96b-79d8b205b436"> 
-  <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/d3e8428b-c8c3-4582-bacf-91858f4c34ed">
+  <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/28952fc8-841e-4d3a-80bd-d1a3a92c5a07"> 
+  <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/41678fd3-c583-4b7b-939e-dbd443d44c97">
 </div>
 
 - Several graph-based clustering algorithms are available within ```acdc```, including Leiden and Louvain. 
