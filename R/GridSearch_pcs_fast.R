@@ -33,94 +33,95 @@
 #'
 #' @export
 GridSearch_pcs_fast <- function(object,
-                           assay.name,
-                           .resolutions=seq(0.01,2,by = 0.01),
-                           .bootstraps=1,
-                           .knns=seq(3,31,by = 2),
-                           .pct_cells=100,
-                           .replace=FALSE,
-                           .clust_alg="Louvain",
-                           free.cores=2,
-                           .type="genes",
-                           .dims=NULL,
-                           my_seed=0,
-                           weights = "unitary",
-                           exp_base = 2.718282)
+                                assay.name,
+                                .resolutions = seq(0.01, 2, by = 0.01),
+                                .bootstraps = 1,
+                                .knns = seq(3, 31, by = 2),
+                                .pct_cells = 100,
+                                .replace = FALSE,
+                                .clust_alg = "Louvain",
+                                free.cores = 2,
+                                .type = "genes",
+                                .dims = NULL,
+                                my_seed = 0,
+                                weights = "unitary",
+                                exp_base = 2.718282,
+                                show_progress_bar = TRUE)
 
 {
-
+  
   require(foreach)
   ## Silhouette Analysis ----
   print("Selection of parameters for optimal clustering solution")
-
+  
   {
-
-
+    
+    
     if (Sys.info()['sysname'] == "Windows"){
       clust.type <- "PSOCK"
     } else if ( (Sys.info()['sysname'] == "Linux") | (Sys.info()['sysname'] == "Darwin") ) {
       clust.type <- "FORK"
     }
-
+    
     n_cores <- parallel::detectCores()-free.cores
-    myCluster <- parallel::makeCluster(n_cores,type = clust.type)
-    doParallel::registerDoParallel(myCluster)
     n_cells_to_subsample <- round(ncol(object)*.pct_cells/100)
     n_cells_to_subsample
-
-
+    
+    
     .clust_alg = switch(.clust_alg,
                         "Louvain"= 1,
                         "Louvain-mult-ref"=2,
                         "SLM"=3,
                         "Leiden"=4)
-
-
+    
+    
     if (.type=="genes"){
       object.dist <- as.matrix(as.dist( 1-cor( object[[assay.name]]@scale.data,method = "pea" )))
     } else if (.type=="PCA"){
       object.dist <- as.matrix(as.dist( 1-cor( t(object@reductions$pca@cell.embeddings),method = "pea" )))
+      numPCs <- ncol(object@reductions$pca@cell.embeddings)
+      .dims = 1:max(.dims, numPCs)
     }
-
-
-    print(system.time({
-      result <- foreach::foreach( a_knn = .knns, .combine = 'rbind' ) %dopar% {
-      # result <- foreach::foreach( a_res = .resolutions, .combine = 'rbind' ) %dopar% { # Iterates using a_res
-        # knn = rep( .knns , length(.bootstraps) )
-        # bootstrap = rep( .bootstraps, length(.knns) )
-        # index <- 1:length(knn)
-
+    
+    if(n_cores==1){
+      result <- matrix(NA, nrow = 0, ncol = 11)
+      result <- as_tibble(data.frame(result))
+      colnames(result) <- c(
+        "index",
+        "bootstrap",
+        "knn",
+        "resolution",
+        "tot_sil_neg",
+        "lowest_sil_clust",
+        "max_sil_clust",
+        "sil_avg",
+        "sil_mean_median",
+        "n_clust",
+        "random.seed"
+      )
+      # print(system.time({
+      total_iters <- length(.knns)*length(.resolutions)*.bootstraps
+      if(show_progress_bar) pb = txtProgressBar(min = 0, max = total_iters, initial = 0, style = 3)
+      iter_cur <- 0
+      for(a_knn in .knns) {
         res = rep( .resolutions , length(.bootstraps) )
-        # bootstrap = rep( .bootstraps, length(.resolutions) )
-        bootstrap <- c() #rep(NA, length(.resolutions)*length(.bootstraps))
+        bootstrap <- c()
         for(i in 1:length(.bootstraps)){
           bootstrap <- c(bootstrap, rep(i, length(.resolutions)))
         }
-
+        
         index <- 1:length(res)
-
-
-        # my_sil.df <- dplyr::tibble( index = index,
-        #                             bootstrap = bootstrap,
-        #                             knn = knn, # KNN set to values of .knn repeated X bootstraps
-        #                             resolution = 0, # Resolutions set to 0
-        #                             tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
-        #                             sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
-
-
+        
         my_sil.df <- dplyr::tibble( index = index,
                                     bootstrap = bootstrap,
                                     knn = 0,
                                     resolution = res,
                                     tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
                                     sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
-
-        nrow(my_sil.df)
-
         set.seed(a_knn)
         selected_samples <- sample(colnames(object),size=n_cells_to_subsample,replace=.replace)
         x <- object[ , colnames(object) %in% selected_samples ]
-
+        
         if (.type=="genes"){
           if(.pct_cells < 100){
             x.dist <- as.matrix(as.dist( 1-cor( x[[assay.name]]@scale.data,method = "pea" )))
@@ -129,7 +130,7 @@ GridSearch_pcs_fast <- function(object,
           }
           x@graphs <- Seurat::FindNeighbors(x.dist,
                                             distance.matrix = TRUE,
-                                            verbose = TRUE,
+                                            verbose = FALSE,
                                             # k.param = my_sil.df$knn[a_index], # iteration over KNNs
                                             k.param = a_knn,
                                             annoy.metric = "euclidean",
@@ -143,24 +144,24 @@ GridSearch_pcs_fast <- function(object,
           }
           x <- Seurat::FindNeighbors(x,
                                      reduction = "pca",
-                                     verbose = TRUE,
+                                     verbose = FALSE,
                                      # k.param = my_sil.df$knn[a_index], # iteration over KNNs
                                      k.param = a_knn,
                                      annoy.metric = "euclidean",
                                      dims=.dims,
                                      compute.SNN = TRUE)
         }
-
+        
         names(x@graphs) <- c("nn", "snn")
-
+        
         for ( a_index in my_sil.df$index )
         {
           set.seed(a_index)
           my_sil.df$random.seed[a_index] <- a_index
-          print(paste0("--- Silhouette score computation resolution/bootstrap : ",
-                       res[a_index] ,
-                       "|" ,
-                       my_sil.df$bootstrap[a_index] ))
+          # print(paste0("--- Silhouette score computation resolution/bootstrap : ",
+          #              res[a_index] ,
+          #              "|" ,
+          #              my_sil.df$bootstrap[a_index] ))
           x <- Seurat::FindClusters( x,
                                      graph.name = "snn",
                                      resolution = res[a_index],
@@ -169,7 +170,10 @@ GridSearch_pcs_fast <- function(object,
                                      algorithm = .clust_alg,
                                      random.seed = my_seed
           )
-          table(x$seurat_clusters)
+          # table(x$seurat_clusters)
+          iter_cur <- iter_cur + 1
+          if(show_progress_bar) setTxtProgressBar(pb, iter_cur)
+          
           if ( nlevels(x$seurat_clusters) == 1 ) next ;
           s <- cluster::silhouette( as.integer(x$seurat_clusters) , x.dist )
           if (weights=="exp"){
@@ -192,11 +196,131 @@ GridSearch_pcs_fast <- function(object,
           # View(my_sil.df)
         }
         my_sil.df$knn = a_knn
-        return(my_sil.df)
-      } # End of dopar
-    })) # End of print
-    parallel::stopCluster(myCluster)
+        result <- rbind(result, my_sil.df)
+      }
+      if(show_progress_bar) close(pb)
+      #})) # End of print
+    } else {
+      myCluster <- parallel::makeCluster(n_cores,type = clust.type)
+      doParallel::registerDoParallel(myCluster)
+      print(system.time({
+        result <- foreach::foreach( a_knn = .knns, .combine = 'rbind' ) %dopar% {
+          # result <- foreach::foreach( a_res = .resolutions, .combine = 'rbind' ) %dopar% { # Iterates using a_res
+          # knn = rep( .knns , length(.bootstraps) )
+          # bootstrap = rep( .bootstraps, length(.knns) )
+          # index <- 1:length(knn)
+          
+          res = rep( .resolutions , length(.bootstraps) )
+          # bootstrap = rep( .bootstraps, length(.resolutions) )
+          bootstrap <- c() #rep(NA, length(.resolutions)*length(.bootstraps))
+          for(i in 1:length(.bootstraps)){
+            bootstrap <- c(bootstrap, rep(i, length(.resolutions)))
+          }
+          
+          index <- 1:length(res)
+          
+          
+          # my_sil.df <- dplyr::tibble( index = index,
+          #                             bootstrap = bootstrap,
+          #                             knn = knn, # KNN set to values of .knn repeated X bootstraps
+          #                             resolution = 0, # Resolutions set to 0
+          #                             tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
+          #                             sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
+          
+          
+          my_sil.df <- dplyr::tibble( index = index,
+                                      bootstrap = bootstrap,
+                                      knn = 0,
+                                      resolution = res,
+                                      tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
+                                      sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
+          
+          nrow(my_sil.df)
+          
+          set.seed(a_knn)
+          selected_samples <- sample(colnames(object),size=n_cells_to_subsample,replace=.replace)
+          x <- object[ , colnames(object) %in% selected_samples ]
+          
+          if (.type=="genes"){
+            if(.pct_cells < 100){
+              x.dist <- as.matrix(as.dist( 1-cor( x[[assay.name]]@scale.data,method = "pea" )))
+            } else {
+              x.dist <- object.dist
+            }
+            x@graphs <- Seurat::FindNeighbors(x.dist,
+                                              distance.matrix = TRUE,
+                                              verbose = FALSE,
+                                              # k.param = my_sil.df$knn[a_index], # iteration over KNNs
+                                              k.param = a_knn,
+                                              annoy.metric = "euclidean",
+                                              dims=.dims,
+                                              compute.SNN = TRUE)
+          } else if (.type=="PCA"){
+            if(.pct_cells < 100){
+              x.dist <- as.matrix(as.dist( 1-cor( t(x@reductions$pca@cell.embeddings),method = "pea" )))
+            } else {
+              x.dist <- object.dist
+            }
+            x <- Seurat::FindNeighbors(x,
+                                       reduction = "pca",
+                                       verbose = FALSE,
+                                       # k.param = my_sil.df$knn[a_index], # iteration over KNNs
+                                       k.param = a_knn,
+                                       annoy.metric = "euclidean",
+                                       dims=.dims,
+                                       compute.SNN = TRUE)
+          }
+          
+          names(x@graphs) <- c("nn", "snn")
+          
+          for ( a_index in my_sil.df$index )
+          {
+            set.seed(a_index)
+            my_sil.df$random.seed[a_index] <- a_index
+            print(paste0("--- Silhouette score computation resolution/bootstrap : ",
+                         res[a_index] ,
+                         "|" ,
+                         my_sil.df$bootstrap[a_index] ))
+            x <- Seurat::FindClusters( x,
+                                       graph.name = "snn",
+                                       resolution = res[a_index],
+                                       verbose = FALSE,
+                                       modularity.fxn = 1,
+                                       algorithm = .clust_alg,
+                                       random.seed = my_seed
+            )
+            table(x$seurat_clusters)
+            if ( nlevels(x$seurat_clusters) == 1 ) next ;
+            s <- cluster::silhouette( as.integer(x$seurat_clusters) , x.dist )
+            if (weights=="exp"){
+              neg.sil <- (s[,"sil_width"] < 0)
+              # exp_base <- exp(1)
+              s[neg.sil,"sil_width"] <- -1*(exp_base^abs(s[neg.sil,"sil_width"]))
+            }
+            # pdf( file.path(reports.dir,paste0(“sil-res-“,a_res,“.pdf”)) )
+            p <- factoextra::fviz_silhouette(s,print.summary = FALSE)
+            y <- sapply( levels(p$data$cluster) , function(i) mean( p$data$sil_width[ p$data$cluster == i ] ) )
+            z <- sapply( levels(p$data$cluster) , function(i) median( p$data$sil_width[ p$data$cluster == i ] ) )
+            tot_sil_neg <- sapply( levels(p$data$cluster) , function(i) sum( p$data$sil_width[ p$data$cluster == i ] < 0.25 ) )
+            my_sil.df$sil_avg[ a_index ] = mean(y)
+            my_sil.df$sil_mean_median[ a_index ] = mean(z)
+            my_sil.df$tot_sil_neg[ a_index ] = sum(tot_sil_neg)
+            my_sil.df$lowest_sil_clust[ a_index ] = min(y)
+            my_sil.df$max_sil_clust[a_index] = max(y)
+            my_sil.df$n_clust[ a_index ] = nlevels(p$data$cluster)
+            # dev.off()
+            # View(my_sil.df)
+          }
+          my_sil.df$knn = a_knn
+          return(my_sil.df)
+        } # End of dopar
+      })) # End of print
+      parallel::stopCluster(myCluster)
+    }
+    
+    
+    
     my_sil.df <- result
-
+    return(my_sil.df)
   }
 }
