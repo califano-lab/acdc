@@ -28,7 +28,7 @@
 #' the dataset. `"group.mean.silhouette"` = mean of the per-group average silhouettes. `"group.median.silhouette"` = mean of the
 #' per-group median silhouettes. `"generalized.logistic"` = mean of the transformed-silhouette computed using a generalized logistic
 #' transformation. See vignette for further details.
-#' @param weights weights assigned to negative silhouette scores in the calculation of the objective function `type.fun`. Possible values are
+#' @param SS_weights SS_weights assigned to negative silhouette scores in the calculation of the objective function `type.fun`. Possible values are
 #' either `"unitary"`, i.e. negative silhouette scores are used in the calculation of the objective function as they are, or `"exp"`, i.e.
 #' negative silhouette scores are used in the calculation of the objective function after exponentiation. Default is `"unitary"`.
 #' @param reduction Logical. Whether to perform clustering using principal components (`TRUE`) or
@@ -85,73 +85,90 @@
 #'@export
 
 
-getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduction=TRUE,
-                     reduction.slot="pca", num.pcs=NULL, verbose=FALSE, clust.alg=1,
-                     type.fun="mean.silhouette",weights="unitary",exp_base=2.7182,rng.seed=0)
-
-
+getFinal <- function(
+    S.obj,
+    res = 0.5,
+    NN = 15,
+    assay = "RNA",
+    slot = "scale.data",
+    reduction = TRUE,
+    reduction.slot = "pca",
+    num.pcs = NULL,
+    verbose = FALSE,
+    clust.alg = 1,
+    type.fun = "mean.silhouette",
+    SS_weights = "unitary",
+    SS_exp_base = 2.7182,
+    rng.seed = 0,
+    object.dist = NULL
+)
+  
 {
-
+  source("R/sa_tools_multiMetric.R")
   #require(Seurat)
   require(dplyr)
-
-
-  cat("Add other distance types rather than the sole correlation distance.\n",
-      "Add computation negative clusters.\n",
-      "Add possibility to personalize also the number of features that can be used within an assay.\n")
-
-
   # Process inputs to function
-
-  if (reduction==FALSE){# use original features
-
-    X <- switch(slot,
-                "counts"={
-                  X <- as.matrix(S.obj[[assay]]@counts)
-
-                },
-                "data"={
-                  X <- as.matrix(S.obj[[assay]]@data)
-                },
-                "scale.data"={
-                  X <- S.obj[[assay]]@scale.data
-                })
-
-    if (IsMatrixEmpty(X)==TRUE) {
-
-      stop("The provided slot is empty. Check combination of assay")
-
+  
+  if(is.null(object.dist)){
+    if (reduction==FALSE){# use original features
+      
+      X <- switch(slot,
+                  "counts"={
+                    X <- as.matrix(S.obj[[assay]]@counts)
+                    
+                  },
+                  "data"={
+                    X <- as.matrix(S.obj[[assay]]@data)
+                  },
+                  "scale.data"={
+                    X <- S.obj[[assay]]@scale.data
+                  })
+      
+      if (IsMatrixEmpty(X)==TRUE) {
+        
+        stop("The provided slot is empty. Check combination of assay")
+        
+      }
+      
+      
+      cell.dims <- 2 # cells are along columns
+      d <- sqrt(1 - stats::cor(X))
+      
+      
+    } else if (reduction==TRUE){
+      
+      # use principal components
+      
+      X <- S.obj@reductions[[reduction.slot]]@cell.embeddings
+      numPCs <- ncol(X)
+      cell.dims <- 1 # cells are along rows
+      d <- sqrt(1 - stats::cor(t(X)))
+      
+    } else {
+      
+      stop("reduction must be logical.")
+      
     }
-
-
-    cell.dims <- 2 # cells are along columns
-    d <- 1 - stats::cor(X)
-
-
-  } else if (reduction==TRUE){
-
-    # use principal components
-
-    X <- S.obj@reductions[[reduction.slot]]@cell.embeddings
-    numPCs <- ncol(X)
-
-    cell.dims <- 1 # cells are along rows
-    d <- 1 - stats::cor(t(X))
-
+    
+    rm(X)
   } else {
-
-    stop("reduction must be logical.")
-
+    d <- object.dist
+    if(reduction==FALSE){
+      cell.dims <- 2 # cells are along columns
+    } else if(reduction==TRUE) {
+      numPCs <- ncol(S.obj@reductions[[reduction.slot]]@cell.embeddings)
+      cell.dims <- 1 # cells are along rows
+    }
   }
-
-  rm(X)
-
-
+  
+  
+  
+  
   ######
   # Compute solution with optimal clustering parameters and return Seurat object
-
+  
   if (reduction==FALSE) { # original features
-
+    
     S.obj@graphs <- Seurat::FindNeighbors(object=d,
                                           distance.matrix = TRUE,
                                           verbose = verbose,
@@ -161,10 +178,10 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
                                           #reduction=NULL,
                                           #assay=assay.name,
                                           compute.SNN = TRUE)
-
-
+    
+    
     names(S.obj@graphs) <- c("opt_nn","opt_snn")
-
+    
     suppressWarnings(
       S.obj <- Seurat::FindClusters(object=S.obj,
                                     graph.name="opt_snn",
@@ -174,9 +191,9 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
                                     random.seed=rng.seed,
                                     algorithm=clust.alg)
     )
-
+    
   } else if (reduction==TRUE) { # principal components
-
+    
     if (is.null(num.pcs)) {
       S.obj <- Seurat::FindNeighbors(object=S.obj,
                                      reduction=reduction.slot,
@@ -185,13 +202,13 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
                                      annoy.metric = "euclidean",
                                      dims=1:numPCs,
                                      compute.SNN = TRUE)
-
+      
     } else if (is.null(num.pcs) == FALSE) {
-
+      
       if (num.pcs>numPCs){
         stop("The provided number of principal components (num.pcs) is greater than the number of principal component in the reduction slot.\n")
       }
-
+      
       S.obj <- Seurat::FindNeighbors(object=S.obj,
                                      reduction=reduction.slot,
                                      verbose = verbose,
@@ -199,11 +216,11 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
                                      annoy.metric = "euclidean",
                                      dims=1:num.pcs,
                                      compute.SNN = TRUE)
-
+      
     }
-
+    
     names(S.obj@graphs) <- c("opt_nn","opt_snn")
-
+    
     S.obj <- Seurat::FindClusters(object=S.obj,
                                   graph.name="opt_snn",
                                   resolution=res,
@@ -211,67 +228,73 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
                                   modularity.fxn=1,
                                   random.seed=rng.seed,
                                   algorithm=clust.alg)
-
-
+    
+    
   }
-
-
-
-
+  
+  
+  
+  
   Seurat::Idents(S.obj) <- "seurat_clusters"
-
+  
   # Displays silhouette plot
-
+  
   if ( nlevels(S.obj$seurat_clusters) > 1 ) {
-
+    
     s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
-
-
+    
+    
     # sil_neg <- sapply( unique(s[,"cluster"]),
     #                    function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
     #
-
-
+    
+    
     S.obj[[assay]]@misc$sil <- s
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
     #require(factoextra)
     #require(dplyr)
-
-    plt.sil <- factoextra::fviz_silhouette(s)
-
-    switch(verbose, "TRUE"={print(plt.sil)})
-
-    plt.sil <- plt.sil$data %>%
-      group_by(cluster) %>%
-      summarise(size = n(),
-                ave.sil.width=round(mean(sil_width), 2)) %>%
-      as.data.frame()
-
-
-
-
-
-
-
-
+    
+    # plt.sil <- factoextra::fviz_silhouette(s,print.summary = FALSE)
+    
+    # switch(verbose, "TRUE"={print(plt.sil)})
+    
+    # plt.sil <- plt.sil$data %>%
+    #   group_by(cluster) %>%
+    #   summarise(size = n(),
+    #             ave.sil.width=round(mean(sil_width), 2)) %>%
+    #   as.data.frame()
+    
+    
+    
+    
+    
+    
+    
+    
     # Return metric for the given run
-    metric <- obj.functions(sil=s,type.fun=type.fun,weights=weights,exp_base=exp_base)
+    metric <- obj.functions(S.obj = S.obj,
+                            d = d,
+                            assay.name = assay,
+                            slot = slot,
+                            type.fun=type.fun,
+                            SS_weights=SS_weights,
+                            SS_exp_base=SS_exp_base)
     names(metric) <- type.fun
-
+    
     S.obj[[assay]]@misc$metric <- metric
-
+    
   } else {
     S.obj[[assay]]@misc$sil <- NA
     S.obj[[assay]]@misc$metric <- NA
   }
-
+  
   return(S.obj)
-
-
-
+  
+  
+  
 }
