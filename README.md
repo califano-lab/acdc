@@ -1,6 +1,6 @@
 # acdc 🤘 - beta version 
 
-**A**utomated **C**ommunity **D**etection of **C**ell populations
+**A**UTOMATED **C**OMMUNITY **D**ETECTION of **C**ELL POPULATIONS
 
 This repo contains the current beta version of ```acdc```, an optimization-based framework to automatize clustering of cell populations from scRNA-seq data using community detection algorithms. 
 ```acdc``` is currently **under development** and new functionalities will be released, following completion and benchmarking. 
