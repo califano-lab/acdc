@@ -1,14 +1,16 @@
-# acdc 🤘 - beta version 
+# ACDC 🤘 - beta version 
 
-**A**utomated **C**ommunity **D**etection of **C**ell populations
+**A**utomated **C**ommunity **D**etection of **C**ell Populations
 
 This repo contains the current beta version of ```acdc```, an optimization-based framework to automatize clustering of cell populations from scRNA-seq data using community detection algorithms. 
 ```acdc``` is currently **under development** and new functionalities will be released, following completion and benchmarking. 
 ```acdc``` is deployed as an R package and fully compatible with ```Seurat```, the main scRNA-seq analysis pipeline in R.
 
-<p align="center">
-<img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/09feabaf-d868-48d7-b830-933210db6005">
-</p>
+<div align="center">
+  <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/09feabaf-d868-48d7-b830-933210db6005">
+  <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/28952fc8-841e-4d3a-80bd-d1a3a92c5a07"> 
+  <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/41678fd3-c583-4b7b-939e-dbd443d44c97">
+</div>
 
 - Several graph-based clustering algorithms are available within ```acdc```, including Leiden and Louvain. 
 - 2 optimization routines for parameter tuning are available, Grid Search and(generalized) Simulated Annealing.
@@ -29,14 +31,14 @@ STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!🤘🏾
 2. Run the following commands
 ```
 install.packages("devtools")
-devtools::install_github("califano-lab/acdc-beta")
+devtools::install_github("califano-lab/acdc")
 ```
 3. ... Start playing around! 🎸
 
 # Core functions
-1. `SAClustering`: optimizes the clustering solution to find the best set of parameters (k, resolution, etc) using a Simulated Annealing-based optimization 
-2. `GridSearch`: optimizes the clustering solution to find best set of parameters (k, resolution, etc) using a Grid Search 
-3. `getFinal`: returns the optimal clustering solution with a user-defined set of parameters (k, resolution etc). Useful when a set of optimal parameters has been identified by `SAClustering` or `GridSearch`, and one is willing to store the optimal parameters into the Seurat object without re-running an optimization routine.
+1. `SAClustering`: optimizes the clustering solution to find the best set of parameters (k, resolution, PCs) using a Simulated Annealing-based optimization 
+2. `GridSearch_pcs_fast`: optimizes the clustering solution to find best set of parameters (k, resolution, PCs) using a Grid Search 
+3. `getFinal`: returns the optimal clustering solution with a user-defined set of parameters (k, resolution, PCs). Useful when a set of optimal parameters has been identified by `SAClustering` or `GridSearch`, and one is willing to store the optimal parameters into the Seurat object without re-running an optimization routine.
 
 
 
