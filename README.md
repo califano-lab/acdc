@@ -33,9 +33,18 @@ STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!🤘🏾
 install.packages("devtools")
 devtools::install_github("califano-lab/acdc")
 ```
-3. ... Start playing around! 🎸
 
-# Core functions
+
+# Usage and Core functions
+1. Load the acdc-beta version into R as:
+```
+library("acdc")
+```
+
+2. ... Start playing around! 🎸
+
+
+The core functions of the package are:
 1. `SAClustering`: optimizes the clustering solution to find the best set of parameters (k, resolution, PCs) using a Simulated Annealing-based optimization 
 2. `GridSearch_pcs_fast`: optimizes the clustering solution to find best set of parameters (k, resolution, PCs) using a Grid Search 
 3. `getFinal`: returns the optimal clustering solution with a user-defined set of parameters (k, resolution, PCs). Useful when a set of optimal parameters has been identified by `SAClustering` or `GridSearch`, and one is willing to store the optimal parameters into the Seurat object without re-running an optimization routine.
