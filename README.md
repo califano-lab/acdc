@@ -8,8 +8,7 @@ This repo contains the current beta version of ```acdc```, an optimization-based
 
 <p align="center">
 <img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/09feabaf-d868-48d7-b830-933210db6005">
-  ![image](https://github.com/califano-lab/acdc-beta/assets/92543296/d4b21c30-29c8-4f30-97e5-617717ec422b)
-  
+<img width="240" alt="image" src="https://github.com/califano-lab/acdc-beta/assets/92543296/d4b21c30-29c8-4f30-97e5-617717ec422b">  
 
 </p>
 
