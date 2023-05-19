@@ -92,8 +92,9 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
 
 {
 
-  #require(Seurat)
-  require(dplyr)
+  suppressMessages(require(Seurat))
+  suppressMessages(require(dplyr))
+  suppressMessages(require(factoextra))
 
 
   cat("This is a beta version. acdc is currently under development.\n")

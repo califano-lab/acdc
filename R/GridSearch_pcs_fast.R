@@ -1,9 +1,15 @@
-#' GridSearch_pcs_fast
-#' Computes the optimal combination of k and resolution for
-#' clustering, by grid-search optimization of the Silhouette score across multiple
+#' Determination of the optimal combination of k and resolution for
+#' single-cell clustering.
+#'
+#' @description
+#' `GridSearch_pcs_fast()` optimizes clustering solution of scRNA-seq databy
+#' grid-search optimization of the Silhouette score across multiple
 #' resamplings. Runs faster by computing the distance matrix once if not bootstrapping
 #' and placing NN in the outer loop and resolution in the inner loop, reducing the number
 #' of times that neighbors are computed.
+#'
+#' @details
+#' Input arguments
 #'
 #' @param object Seurat object (genes/proteins along rows and cells on columns)
 #' @param assay.name Assay to use
@@ -16,22 +22,26 @@
 #' @param free_cores number of cores that are not used for the calculation. Default=2.
 #' @param my_seed random seed for FindClusters. Default=0.
 #' @param weights unitary (unitary) or exponential (exp) way of weighing the silhouette scores. Default=unitary.
-#' @return A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters. \cr
+#' @return A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters. Columns consist of the following vectors.
+#' \itemize{
+#' \item `index`: integer in the interval 1-`n_idx`, where `n_idx`=\code{length(.bootstrap)*}\code{length(.knns)}
+#' uniquely assigned to each combination of `.bootstraps` and `.knns`.
+#' \item `boostrap`: integer assigned to the given resampling. Possible values are those in `.bootstraps`.
+#' \item `knn`: number of nearest neighbors used as input parameters to `FindNeighbors`. Possible values are those in `.knns`.
+#' \item `resolution`: resolution for `FindClusters`. Possible values are those in `.resolutions`.
+#' \item `tot_sil_neg`:
+#' \item `lowest_sil_clust`:
+#' \item `sil_avg`:
+#' \item `sil_mean_median`:
+#' \item `n_clust`: number of clusters resulting for the given combination of `knn`, `resolution` with cells sampled according to `bootstrap`.
+#' \item `random.seed`: random seed used to initialize the rng for cell subsamplings. Values are the same as `index`.
+#' }
 #'
-#' Columns consist of the following vectors.
-#' \code{index}: integer in the interval 1-\emph{n_idx}, where \emph{n_idx}=\code{length(.bootstrap)*}\code{length(.knns)}
-#' uniquely assigned to each combination of \code{.bootstraps} and \code{.knns}. \cr
-#' \code{boostrap}: integer assigned to the given resampling. Possible values are those in \code{.bootstraps}. \cr
-#' \code{knn}: number of nearest neighbors used as input parameters to FindNeighbors. Possible values are those in \code{.knns}. \cr
-#' \code{resolution}: resolution for FindClusters. Possible values are those in \code{.resolutions}. \cr
-#' \code{tot_sil_neg}: \cr
-#' \code{lowest_sil_clust}: \cr
-#' \code{sil_avg}: \cr
-#' \code{sil_mean_median}: \cr
-#' \code{n_clust}: number of clusters resulting for the given combination of \code{knn}, \code{resolution} with cells sampled according to \code{bootstrap}. \cr
-#' \code{random.seed}: random seed used to initialize the rng for cell subsamplings. Values are the same as \code{index}.
 #'
 #' @export
+
+
+
 GridSearch_pcs_fast <- function(object,
                                 assay.name,
                                 .resolutions = seq(0.01, 2, by = 0.01),
@@ -49,34 +59,34 @@ GridSearch_pcs_fast <- function(object,
                                 show_progress_bar = TRUE)
 
 {
-  
+
   cat("This is a beta version. acdc is currently under development.\n")
-  
-  require(foreach)
+
+  suppressMessages(require(foreach))
   ## Silhouette Analysis ----
   print("Selection of parameters for optimal clustering solution")
-  
+
   {
-    
-    
+
+
     if (Sys.info()['sysname'] == "Windows"){
       clust.type <- "PSOCK"
     } else if ( (Sys.info()['sysname'] == "Linux") | (Sys.info()['sysname'] == "Darwin") ) {
       clust.type <- "FORK"
     }
-    
+
     n_cores <- parallel::detectCores()-free.cores
     n_cells_to_subsample <- round(ncol(object)*.pct_cells/100)
     n_cells_to_subsample
-    
-    
+
+
     .clust_alg = switch(.clust_alg,
                         "Louvain"= 1,
                         "Louvain-mult-ref"=2,
                         "SLM"=3,
                         "Leiden"=4)
-    
-    
+
+
     if (.type=="genes"){
       object.dist <- as.matrix(as.dist( 1-cor( object[[assay.name]]@scale.data,method = "pea" )))
     } else if (.type=="PCA"){
@@ -84,7 +94,7 @@ GridSearch_pcs_fast <- function(object,
       numPCs <- ncol(object@reductions$pca@cell.embeddings)
       .dims = 1:max(.dims, numPCs)
     }
-    
+
     if(n_cores==1){
       result <- matrix(NA, nrow = 0, ncol = 11)
       result <- as_tibble(data.frame(result))
@@ -111,9 +121,9 @@ GridSearch_pcs_fast <- function(object,
         for(i in 1:length(.bootstraps)){
           bootstrap <- c(bootstrap, rep(i, length(.resolutions)))
         }
-        
+
         index <- 1:length(res)
-        
+
         my_sil.df <- dplyr::tibble( index = index,
                                     bootstrap = bootstrap,
                                     knn = 0,
@@ -123,7 +133,7 @@ GridSearch_pcs_fast <- function(object,
         set.seed(a_knn)
         selected_samples <- sample(colnames(object),size=n_cells_to_subsample,replace=.replace)
         x <- object[ , colnames(object) %in% selected_samples ]
-        
+
         if (.type=="genes"){
           if(.pct_cells < 100){
             x.dist <- as.matrix(as.dist( 1-cor( x[[assay.name]]@scale.data,method = "pea" )))
@@ -153,9 +163,9 @@ GridSearch_pcs_fast <- function(object,
                                      dims=.dims,
                                      compute.SNN = TRUE)
         }
-        
+
         names(x@graphs) <- c("nn", "snn")
-        
+
         for ( a_index in my_sil.df$index )
         {
           set.seed(a_index)
@@ -175,7 +185,7 @@ GridSearch_pcs_fast <- function(object,
           # table(x$seurat_clusters)
           iter_cur <- iter_cur + 1
           if(show_progress_bar) setTxtProgressBar(pb, iter_cur)
-          
+
           if ( nlevels(x$seurat_clusters) == 1 ) next ;
           s <- cluster::silhouette( as.integer(x$seurat_clusters) , x.dist )
           if (weights=="exp"){
@@ -211,38 +221,38 @@ GridSearch_pcs_fast <- function(object,
           # knn = rep( .knns , length(.bootstraps) )
           # bootstrap = rep( .bootstraps, length(.knns) )
           # index <- 1:length(knn)
-          
+
           res = rep( .resolutions , length(.bootstraps) )
           # bootstrap = rep( .bootstraps, length(.resolutions) )
           bootstrap <- c() #rep(NA, length(.resolutions)*length(.bootstraps))
           for(i in 1:length(.bootstraps)){
             bootstrap <- c(bootstrap, rep(i, length(.resolutions)))
           }
-          
+
           index <- 1:length(res)
-          
-          
+
+
           # my_sil.df <- dplyr::tibble( index = index,
           #                             bootstrap = bootstrap,
           #                             knn = knn, # KNN set to values of .knn repeated X bootstraps
           #                             resolution = 0, # Resolutions set to 0
           #                             tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
           #                             sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
-          
-          
+
+
           my_sil.df <- dplyr::tibble( index = index,
                                       bootstrap = bootstrap,
                                       knn = 0,
                                       resolution = res,
                                       tot_sil_neg = 0, lowest_sil_clust = 0, max_sil_clust = 0,
                                       sil_avg = 0, sil_mean_median = 0, n_clust = 0, random.seed = 0 )
-          
+
           nrow(my_sil.df)
-          
+
           set.seed(a_knn)
           selected_samples <- sample(colnames(object),size=n_cells_to_subsample,replace=.replace)
           x <- object[ , colnames(object) %in% selected_samples ]
-          
+
           if (.type=="genes"){
             if(.pct_cells < 100){
               x.dist <- as.matrix(as.dist( 1-cor( x[[assay.name]]@scale.data,method = "pea" )))
@@ -272,9 +282,9 @@ GridSearch_pcs_fast <- function(object,
                                        dims=.dims,
                                        compute.SNN = TRUE)
           }
-          
+
           names(x@graphs) <- c("nn", "snn")
-          
+
           for ( a_index in my_sil.df$index )
           {
             set.seed(a_index)
@@ -319,9 +329,9 @@ GridSearch_pcs_fast <- function(object,
       })) # End of print
       parallel::stopCluster(myCluster)
     }
-    
-    
-    
+
+
+
     my_sil.df <- result
     return(my_sil.df)
   }

@@ -128,9 +128,9 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   {
 
   ######SA
-  #require(GenSA)
-  #require(Seurat)
-  require(dplyr)
+  suppressMessages(require(GenSA))
+  suppressMessages(require(Seurat))
+  suppressMessages(require(dplyr))
 
 
   cat("This is a beta version. acdc is currently under development!.\n")

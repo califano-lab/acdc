@@ -2,12 +2,8 @@
 % Please edit documentation in R/GridSearch_pcs_fast.R
 \name{GridSearch_pcs_fast}
 \alias{GridSearch_pcs_fast}
-\title{GridSearch_pcs_fast
-Computes the optimal combination of k and resolution for
-clustering, by grid-search optimization of the Silhouette score across multiple
-resamplings. Runs faster by computing the distance matrix once if not bootstrapping
-and placing NN in the outer loop and resolution in the inner loop, reducing the number
-of times that neighbors are computed.}
+\title{Determination of the optimal combination of k and resolution for
+single-cell clustering.}
 \usage{
 GridSearch_pcs_fast(
   object,
@@ -51,26 +47,28 @@ GridSearch_pcs_fast(
 \item{free_cores}{number of cores that are not used for the calculation. Default=2.}
 }
 \value{
-A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters. \cr
-
-Columns consist of the following vectors.
-\code{index}: integer in the interval 1-\emph{n_idx}, where \emph{n_idx}=\code{length(.bootstrap)*}\code{length(.knns)}
-uniquely assigned to each combination of \code{.bootstraps} and \code{.knns}. \cr
-\code{boostrap}: integer assigned to the given resampling. Possible values are those in \code{.bootstraps}. \cr
-\code{knn}: number of nearest neighbors used as input parameters to FindNeighbors. Possible values are those in \code{.knns}. \cr
-\code{resolution}: resolution for FindClusters. Possible values are those in \code{.resolutions}. \cr
-\code{tot_sil_neg}: \cr
-\code{lowest_sil_clust}: \cr
-\code{sil_avg}: \cr
-\code{sil_mean_median}: \cr
-\code{n_clust}: number of clusters resulting for the given combination of \code{knn}, \code{resolution} with cells sampled according to \code{bootstrap}. \cr
-\code{random.seed}: random seed used to initialize the rng for cell subsamplings. Values are the same as \code{index}.
+A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters. Columns consist of the following vectors.
+\itemize{
+\item `index`: integer in the interval 1-`n_idx`, where `n_idx`=\code{length(.bootstrap)*}\code{length(.knns)}
+uniquely assigned to each combination of `.bootstraps` and `.knns`.
+\item `boostrap`: integer assigned to the given resampling. Possible values are those in `.bootstraps`.
+\item `knn`: number of nearest neighbors used as input parameters to `FindNeighbors`. Possible values are those in `.knns`.
+\item `resolution`: resolution for `FindClusters`. Possible values are those in `.resolutions`.
+\item `tot_sil_neg`:
+\item `lowest_sil_clust`:
+\item `sil_avg`:
+\item `sil_mean_median`:
+\item `n_clust`: number of clusters resulting for the given combination of `knn`, `resolution` with cells sampled according to `bootstrap`.
+\item `random.seed`: random seed used to initialize the rng for cell subsamplings. Values are the same as `index`.
+}
 }
 \description{
-GridSearch_pcs_fast
-Computes the optimal combination of k and resolution for
-clustering, by grid-search optimization of the Silhouette score across multiple
+`GridSearch_pcs_fast()` optimizes clustering solution of scRNA-seq databy
+grid-search optimization of the Silhouette score across multiple
 resamplings. Runs faster by computing the distance matrix once if not bootstrapping
 and placing NN in the outer loop and resolution in the inner loop, reducing the number
 of times that neighbors are computed.
+}
+\details{
+Input arguments
 }
