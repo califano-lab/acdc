@@ -1,11 +1,11 @@
 Package: acdc
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Optimization-based Clustering of scRNA-Seq Data
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: Luca Zanella, Alexander Wang
+Maintainer: Alexander Wang <aw3436@cumc.columbia.edu>
+Description: Uses GridSearch and Simulated annealing to cluster single-cell data.
+    This is beta-version, work in progress.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true

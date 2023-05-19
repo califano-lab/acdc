@@ -23,7 +23,8 @@ GridSearch_pcs_fast(
   .dims = NULL,
   my_seed = 0,
   weights = "unitary",
-  exp_base = 2.718282
+  exp_base = 2.718282,
+  show_progress_bar = TRUE
 )
 }
 \arguments{

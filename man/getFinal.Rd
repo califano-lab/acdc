@@ -17,10 +17,9 @@ getFinal(
   verbose = FALSE,
   clust.alg = 1,
   type.fun = "mean.silhouette",
-  SS_weights = "unitary",
-  SS_exp_base = 2.7182,
-  rng.seed = 0,
-  object.dist = NULL
+  weights = "unitary",
+  exp_base = 2.7182,
+  rng.seed = 0
 )
 }
 \arguments{
@@ -55,7 +54,7 @@ the dataset. `"group.mean.silhouette"` = mean of the per-group average silhouett
 per-group median silhouettes. `"generalized.logistic"` = mean of the transformed-silhouette computed using a generalized logistic
 transformation. See vignette for further details.}
 
-\item{SS_weights}{SS_weights assigned to negative silhouette scores in the calculation of the objective function `type.fun`. Possible values are
+\item{weights}{weights assigned to negative silhouette scores in the calculation of the objective function `type.fun`. Possible values are
 either `"unitary"`, i.e. negative silhouette scores are used in the calculation of the objective function as they are, or `"exp"`, i.e.
 negative silhouette scores are used in the calculation of the objective function after exponentiation. Default is `"unitary"`.}
 
