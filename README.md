@@ -24,7 +24,7 @@ New releases will expand functionalities to new features, including the possibil
 STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!🤘🏾
 ```
 
-<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSeVPgqixOeJtSAfGee1Feb2uFqBf01_xsO-6Q0LCS5MAR_Jjw/viewform?embedded=true" width="640" height="606" frameborder="0" marginheight="0" marginwidth="0">Caricamento…</iframe>
+https://forms.gle/NCRPJPmXzfbrMH7U7
 
 **Please, be aware that while this project is "work in progress" and outcomes are continuously benchmarked, cross-platform compability might not be guaranteed. The current beta version of `acdc` has been installed and tested on several systems running MacOS and Windows, but not on Linux-based systems. As such, currently we are not able to guarantee that all functionalities will be available on Linux-based platforms"
 
