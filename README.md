@@ -24,6 +24,7 @@ New releases will expand functionalities to new features, including the possibil
 STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!🤘🏾
 ```
 
+**Please, be aware that while this project is "work in progress" and outcomes are continuously benchmarked, cross-platform compability might not be guaranteed. The current beta version of `acdc` has been installed and tested on several systems running MacOS and Windows, but not on Linux-based systems. As such, currently we are not able to guarantee that all functionalities will be available on Linux-based platforms"
 
 
 # Installation 
@@ -50,12 +51,50 @@ The core functions of the package are:
 3. `getFinal`: returns the optimal clustering solution with a user-defined set of parameters (k, resolution, PCs). Useful when a set of optimal parameters has been identified by `SAClustering` or `GridSearch`, and one is willing to store the optimal parameters into the Seurat object without re-running an optimization routine.
 
 
+# Examples
+
+Given a Seurat Object named `S.obj`, automatically identify an optimal clustering solution by changing the number of nearest-neighbors (NN) and the resolution (res)
+
+1. using a Simulated Annealing-based optimization (stochastic search). Retrieve solutions in a user-defined amount of time (2 min) and automatically update `S.obj` by storing the optimal clustering solution in the `seurat_cluster` slot of the metadata: 
+```
+settings <- list(max.time=120) # max.time must be in s
+
+S.obj <- SAClustering(S.obj=S.obj,
+res.range=c(0.1,1),
+NN.range=c(3,15),
+reduction=TRUE,
+control=settings)
+```
+The default objective function, `type.fun`, in the previous example is the average silhouette, `"mean.silhouette"`, computed across all clusters.
+
+2. using a Grid Search approach (deterministic search) span a 10x10 grid of NN and resolution values and output a tibble that enlists the clustering solution corresponding to each combination of the parameters:
+```
+clustering_GS <- GridSearch_pcs_fast(object = S.obj,
+assay.name="RNA",
+.resolutions = seq(0.1, 1.9, by = 0.2),
+.bootstraps = 1,
+.knns = seq(11, 101, by = 10))
+```
+3. Store the clustering solution obtained with a given set of parameters, e.g. NN and res, and include it in `S.obj`.
+```
+S.obj <- getFinal(S.obj=pbmc3k.final,
+res=1,
+NN=30,
+reduction=TRUE)
+```
+The default objective function, `type.fun`, in the previous example is the mean silhouette computed across all clusters, `"mean.silhouette"`.
+
 
 # Dependencies
-1. `Seurat`: the tool is fully integrated with the Seurat pipeline for single cell analysis and leverages Seurat functions for graph construction and cell clustering. 
+1. `Seurat`: `acdc` is fully integrated with the Seurat pipeline for single cell analysis and leverages Seurat functions for graph construction and cell clustering. 
 2. `GenSA`: for optimization based on simulated annealing
 3. `factoextra`: for silhouette analysis
-4. `foreach`: for parallelization of GridSearch 
+4. `doParallel`: to enhance parallelization
+5. `foreach`: for parallelization of GridSearch
+6. `cluster`: for cluster analysis
+7. `dplyr`: for easier data manipulation
+
+
 
 
 # References
