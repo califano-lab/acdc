@@ -46,9 +46,9 @@
 
 GridSearch_pcs_fast <- function(object,
                                 assay.name,
-                                .resolutions = seq(0.01, 2, by = 0.5),
+                                .resolutions = seq(0.1, 1.9, by = 0.2),
                                 .bootstraps = 1,
-                                .knns = seq(3, 7, by = 2),
+                                .knns = seq(11, 101, by = 10),
                                 .pct_cells = 100,
                                 .replace = FALSE,
                                 .clust_alg = "Louvain",
