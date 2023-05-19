@@ -280,10 +280,7 @@ getFinal <- function(
 
 
     # Return metric for the given run
-    metric <- obj.functions(S.obj = S.obj,
-                            d = d,
-                            assay.name = assay,
-                            slot = slot,
+    metric <- obj.functions(sil = s,
                             type.fun=type.fun,
                             weights=weights,
                             exp_base=exp_base)
