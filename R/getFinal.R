@@ -88,65 +88,83 @@
 #'@export
 
 
-getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduction=TRUE,
-                     reduction.slot="pca", num.pcs=NULL, verbose=FALSE, clust.alg=1,
-                     type.fun="mean.silhouette",weights="unitary",exp_base=2.7182,rng.seed=0)
-
+getFinal <- function(
+    S.obj,
+    res = 0.5,
+    NN = 15,
+    assay = "RNA",
+    slot = "scale.data",
+    reduction = TRUE,
+    reduction.slot = "pca",
+    num.pcs = NULL,
+    verbose = FALSE,
+    clust.alg = 1,
+    type.fun = "mean.silhouette",
+    weights = "unitary",
+    exp_base = 2.7182,
+    rng.seed = 0,
+    object.dist = NULL
+)
 
 {
 
-  suppressMessages(require(Seurat))
-  suppressMessages(require(dplyr))
-  suppressMessages(require(factoextra))
-
-
-  cat("This is a beta version. acdc is currently under development.\n")
-
-
+  #require(Seurat)
+  require(dplyr)
   # Process inputs to function
 
-  if (reduction==FALSE){# use original features
+  if(is.null(object.dist)){
+    if (reduction==FALSE){# use original features
 
-    X <- switch(slot,
-                "counts"={
-                  X <- as.matrix(S.obj[[assay]]@counts)
+      X <- switch(slot,
+                  "counts"={
+                    X <- as.matrix(S.obj[[assay]]@counts)
 
-                },
-                "data"={
-                  X <- as.matrix(S.obj[[assay]]@data)
-                },
-                "scale.data"={
-                  X <- S.obj[[assay]]@scale.data
-                })
+                  },
+                  "data"={
+                    X <- as.matrix(S.obj[[assay]]@data)
+                  },
+                  "scale.data"={
+                    X <- S.obj[[assay]]@scale.data
+                  })
 
-    if (SeuratObject::IsMatrixEmpty(X)==TRUE) {
+      if (IsMatrixEmpty(X)==TRUE) {
 
-      stop("The provided slot is empty. Check combination of assay")
+        stop("The provided slot is empty. Check combination of assay")
+
+      }
+
+
+      cell.dims <- 2 # cells are along columns
+      d <- sqrt(1 - stats::cor(X))
+
+
+    } else if (reduction==TRUE){
+
+      # use principal components
+
+      X <- S.obj@reductions[[reduction.slot]]@cell.embeddings
+      numPCs <- ncol(X)
+      cell.dims <- 1 # cells are along rows
+      d <- sqrt(1 - stats::cor(t(X)))
+
+    } else {
+
+      stop("reduction must be logical.")
 
     }
 
-
-    cell.dims <- 2 # cells are along columns
-    d <- 1 - stats::cor(X)
-
-
-  } else if (reduction==TRUE){
-
-    # use principal components
-
-    X <- S.obj@reductions[[reduction.slot]]@cell.embeddings
-    numPCs <- ncol(X)
-
-    cell.dims <- 1 # cells are along rows
-    d <- 1 - stats::cor(t(X))
-
+    rm(X)
   } else {
-
-    stop("reduction must be logical.")
-
+    d <- object.dist
+    if(reduction==FALSE){
+      cell.dims <- 2 # cells are along columns
+    } else if(reduction==TRUE) {
+      numPCs <- ncol(S.obj@reductions[[reduction.slot]]@cell.embeddings)
+      cell.dims <- 1 # cells are along rows
+    }
   }
 
-  rm(X)
+
 
 
   ######
@@ -241,17 +259,18 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
 
 
 
+    #require(factoextra)
+    #require(dplyr)
 
+    # plt.sil <- factoextra::fviz_silhouette(s,print.summary = FALSE)
 
-    plt.sil <- factoextra::fviz_silhouette(s)
+    # switch(verbose, "TRUE"={print(plt.sil)})
 
-    switch(verbose, "TRUE"={print(plt.sil)})
-
-    plt.sil <- plt.sil$data %>%
-      group_by(cluster) %>%
-      summarise(size = n(),
-                ave.sil.width=round(mean(sil_width), 2)) %>%
-      as.data.frame()
+    # plt.sil <- plt.sil$data %>%
+    #   group_by(cluster) %>%
+    #   summarise(size = n(),
+    #             ave.sil.width=round(mean(sil_width), 2)) %>%
+    #   as.data.frame()
 
 
 
@@ -261,7 +280,13 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
 
 
     # Return metric for the given run
-    metric <- obj.functions(sil=s,type.fun=type.fun,weights=weights,exp_base=exp_base)
+    metric <- obj.functions(S.obj = S.obj,
+                            d = d,
+                            assay.name = assay,
+                            slot = slot,
+                            type.fun=type.fun,
+                            weights=weights,
+                            exp_base=exp_base)
     names(metric) <- type.fun
 
     S.obj[[assay]]@misc$metric <- metric
