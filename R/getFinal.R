@@ -36,8 +36,8 @@
 #' a `DimReduc` object of name `"pca"` to be present in `S.obj`.
 #' @param verbose whether to print the outcomes of `FindNeighbors` and `FindClusters` at each function call. Default is `FALSE`.
 #' @param rng.seed Seed of the random number generator used in `FindClusters`.
-#' @param object.dist A distance matrix computed across all cells used in `S.obj`. (Default is `NULL`, i.e. distance matrix is automatically computed as 
-#' a correlation distance). 
+#' @param object.dist A distance matrix computed across all cells used in `S.obj`. (Default is `NULL`, i.e. distance matrix is automatically computed as
+#' a correlation distance).
 #'
 #' @return Returns an object of class Seurat with the with optimal clustering solution stored in the metadata `seurat_clusters`, the
 #' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` and the value of the metric `type.fun` for the assessment of the cluster quality
@@ -86,7 +86,6 @@
 #'
 #'
 #'
-#'
 #'@export
 
 
@@ -113,7 +112,7 @@ getFinal <- function(
   suppressMessages(require(Seurat))
   suppressMessages(require(dplyr))
   suppressMessages(require(factoextra))
-  
+
   # Process inputs to function
 
   if(is.null(object.dist)){

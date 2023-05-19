@@ -61,7 +61,7 @@ negative silhouette scores are used in the calculation of the objective function
 
 \item{rng.seed}{Seed of the random number generator used in `FindClusters`.}
 
-\item{object.dist}{A distance matrix computed across all cells used in `S.obj`. (Default is `NULL`, i.e. distance matrix is automatically computed as 
+\item{object.dist}{A distance matrix computed across all cells used in `S.obj`. (Default is `NULL`, i.e. distance matrix is automatically computed as
 a correlation distance).}
 }
 \value{
@@ -116,7 +116,6 @@ NN=15,
 reduction=FALSE,
 verbose=TRUE)
 }
-
 
 
 
