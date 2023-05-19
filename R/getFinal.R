@@ -36,6 +36,8 @@
 #' a `DimReduc` object of name `"pca"` to be present in `S.obj`.
 #' @param verbose whether to print the outcomes of `FindNeighbors` and `FindClusters` at each function call. Default is `FALSE`.
 #' @param rng.seed Seed of the random number generator used in `FindClusters`.
+#' @param object.dist A distance matrix computed across all cells used in `S.obj`. (Default is `NULL`, i.e. distance matrix is automatically computed as 
+#' a correlation distance). 
 #'
 #' @return Returns an object of class Seurat with the with optimal clustering solution stored in the metadata `seurat_clusters`, the
 #' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` and the value of the metric `type.fun` for the assessment of the cluster quality
@@ -61,7 +63,6 @@
 #' pbmc3k.final <- LoadData("pbmc3k",type="pbmc3k.final")
 #'
 #' Actual example
-#' Get clustering solution on gene expression data with input parameters
 #' Get clustering solution using principal components as features and add the
 #' clustering solution to the metadata under the voice `seurat_clusters` and the
 #' median silhouette computed across all cells as the output metric in `S.obj[["RNA"]]@misc$metric`.
@@ -74,6 +75,7 @@
 #' }
 #'
 #' \dontrun{
+#' Get clustering solution on gene expression data with input parameters
 #' The following example uses reduction = FALSE.
 #' clustering.output <- getFinal(S.obj=pbmc3k.final,
 #' res=0.5,
@@ -108,8 +110,10 @@ getFinal <- function(
 
 {
 
-  #require(Seurat)
-  require(dplyr)
+  suppressMessages(require(Seurat))
+  suppressMessages(require(dplyr))
+  suppressMessages(require(factoextra))
+  
   # Process inputs to function
 
   if(is.null(object.dist)){
