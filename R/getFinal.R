@@ -48,6 +48,9 @@
 #' @author Luca Zanella
 #'
 #' @examples
+#'
+#'
+#'
 #' \dontrun{
 #' # Just to retrieve example data
 #' # devtools::install_github('satijalab/seurat-data') # if package SeuratData is needed, just for e.g.
@@ -57,19 +60,9 @@
 #' InstallData("pbmc3k")
 #' pbmc3k.final <- LoadData("pbmc3k",type="pbmc3k.final")
 #'
-#' # Actual example
-#' # Get clustering solution on gene expression data with input parameters
-#'
-#' clustering.output <- getFinal(S.obj=pbmc3k.final,
-#' res=0.5,
-#' NN=15,
-#' reduction=FALSE,
-#' verbose=TRUE)
-#'}
-#'
-#'
-#' \dontrun{
-#' # Get clustering solution using principal components as features and add the
+#' Actual example
+#' Get clustering solution on gene expression data with input parameters
+#' Get clustering solution using principal components as features and add the
 #' clustering solution to the metadata under the voice `seurat_clusters` and the
 #' median silhouette computed across all cells as the output metric in `S.obj[["RNA"]]@misc$metric`.
 #'
@@ -77,8 +70,18 @@
 #' res=1,
 #' NN=30,
 #' reduction=TRUE,
-#' type.fun="median.silhouette"
+#' type.fun="median.silhouette")
+#' }
+#'
+#' \dontrun{
+#' The following example uses reduction = FALSE.
+#' clustering.output <- getFinal(S.obj=pbmc3k.final,
+#' res=0.5,
+#' NN=15,
+#' reduction=FALSE,
+#' verbose=TRUE)
 #'}
+#'
 #'
 #'
 #'
