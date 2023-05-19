@@ -20,11 +20,11 @@ This repo contains the current beta version of ```acdc```, an optimization-based
 
 New releases will expand functionalities to new features, including the possibility to iteratively sub-cluster cell populations to find fine grain and biologically meaningful clustering solutions.
 
+**To receive updates when novel functionalities are released, feel free to add your email to the following form:** https://forms.gle/NCRPJPmXzfbrMH7U7
+
 ``` 
 STAY TUNED FOR UPDATES AND NOVEL DEVELOPMENTS!🤘🏾
 ```
-
-https://forms.gle/NCRPJPmXzfbrMH7U7
 
 **Please, be aware that while this project is "work in progress" and outcomes are continuously benchmarked, cross-platform compability might not be guaranteed. The current beta version of `acdc` has been installed and tested on several systems running MacOS and Windows, but not on Linux-based systems. As such, currently we are not able to guarantee that all functionalities will be available on Linux-based platforms"
 
