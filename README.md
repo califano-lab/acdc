@@ -66,6 +66,7 @@ reduction=TRUE,
 control=settings)
 ```
 The default objective function, `type.fun`, in the previous example is the average silhouette, `"mean.silhouette"`, computed across all clusters.
+**Remember: the longer the time that you set, the more the number of combinations that are tested, and the higher the chance of obtaining a better solution!"**
 
 2. using a Grid Search approach (deterministic search) span a 10x10 grid of NN and resolution values and output a tibble that enlists the clustering solution corresponding to each combination of the parameters:
 ```
