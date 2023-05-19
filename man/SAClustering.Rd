@@ -116,18 +116,7 @@ AvailableData() # to see some example data
 InstallData("pbmc3k")
 pbmc3k.final <- LoadData("pbmc3k",type="pbmc3k.final")
 
-# Actual example
-# Run SAClustering on gene expression data with default optimization parameters
-
-clust.optimization <- SAClustering(S.obj=pbmc3k.final,
-res.range=c(0.1,1),
-NN.range=c(3,15),
-reduction=FALSE,
-verbose=TRUE)
-}
-
-
-\dontrun{
+# Run SAClustering with user-defined optimization settings
 # Run SAClustering using principal components as features, allowing
 # max computation time of 2 min
 
@@ -142,8 +131,21 @@ control=settings)
 }
 
 
+
 \dontrun{
-# Run SAClustering with user-defined optimization settings
+# Actual example with default parameters
+# Run SAClustering on gene expression data with default optimization parameters
+
+clust.optimization <- SAClustering(S.obj=pbmc3k.final,
+res.range=c(0.1,1),
+NN.range=c(3,15),
+reduction=FALSE,
+verbose=TRUE)
+}
+
+
+
+\dontrun{
 
 # Increase temperature: computationally demanding, useful for complex problems
 

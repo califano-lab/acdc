@@ -19,7 +19,8 @@ getFinal(
   type.fun = "mean.silhouette",
   weights = "unitary",
   exp_base = 2.7182,
-  rng.seed = 0
+  rng.seed = 0,
+  object.dist = NULL
 )
 }
 \arguments{
@@ -59,6 +60,9 @@ either `"unitary"`, i.e. negative silhouette scores are used in the calculation 
 negative silhouette scores are used in the calculation of the objective function after exponentiation. Default is `"unitary"`.}
 
 \item{rng.seed}{Seed of the random number generator used in `FindClusters`.}
+
+\item{object.dist}{A distance matrix computed across all cells used in `S.obj`. (Default is `NULL`, i.e. distance matrix is automatically computed as 
+a correlation distance).}
 }
 \value{
 Returns an object of class Seurat with the with optimal clustering solution stored in the metadata `seurat_clusters`, the
@@ -92,7 +96,6 @@ InstallData("pbmc3k")
 pbmc3k.final <- LoadData("pbmc3k",type="pbmc3k.final")
 
 Actual example
-Get clustering solution on gene expression data with input parameters
 Get clustering solution using principal components as features and add the
 clustering solution to the metadata under the voice `seurat_clusters` and the
 median silhouette computed across all cells as the output metric in `S.obj[["RNA"]]@misc$metric`.
@@ -105,6 +108,7 @@ type.fun="median.silhouette")
 }
 
 \dontrun{
+Get clustering solution on gene expression data with input parameters
 The following example uses reduction = FALSE.
 clustering.output <- getFinal(S.obj=pbmc3k.final,
 res=0.5,
