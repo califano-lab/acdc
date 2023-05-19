@@ -56,8 +56,7 @@
 #' \item  `optim.value` optimal value of the objective function
 #' \item `trace.mat` matrix collecting the history of the algorithm, as produced by the GenSA package.
 #' \item `num.evaluations` number of times the objective function is evaluated
-#' \item `par.history` matrix collecting resolution, number of nearest neighbors, number of clusters and objective
-#  function at each function call
+#' \item `par.history` matrix collecting resolution, number of nearest neighbors, number of clusters and objective function at each function call
 #' }
 #'
 #' @note Add notes
@@ -131,6 +130,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
   suppressMessages(require(GenSA))
   suppressMessages(require(Seurat))
   suppressMessages(require(dplyr))
+  suppressMessages(require(factoextra))
 
 
   cat("This is a beta version. acdc is currently under development!.\n")
@@ -371,8 +371,7 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
       S.obj[[assay]]@misc$sil <- s
 
 
-      #require(factoextra)
-      #require(dplyr)
+
 
       plt.sil <- factoextra::fviz_silhouette(s)
 

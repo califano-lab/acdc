@@ -34,7 +34,7 @@ GridSearch_pcs_fast(
 
 \item{.knns}{sequence of values for the number of nearest neighbors. Default=seq(3, 31, by=2).}
 
-\item{.pct_cells}{percentage of cells sample at each bootstrap iteration. Default is 100% (all cells are used).}
+\item{.pct_cells}{percentage of cells sample at each bootstrap iteration. All cells are used by default.}
 
 \item{.clust_alg}{clustering algorithm. Choose among: "Louvain" (default); "Louvain-mult-ref"; "SLM"; "Leiden".}
 
@@ -47,17 +47,18 @@ GridSearch_pcs_fast(
 \item{free_cores}{number of cores that are not used for the calculation. Default=2.}
 }
 \value{
-A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters. Columns consist of the following vectors.
+A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters.
+Columns consist of the following vectors.
 \itemize{
-\item `index`: integer in the interval 1-`n_idx`, where `n_idx`=\code{length(.bootstrap)*}\code{length(.knns)}
+\item `index`: integer in the interval 1-`n_idx`, where `n_idx`=`length(.bootstrap)*length(.knns)`
 uniquely assigned to each combination of `.bootstraps` and `.knns`.
 \item `boostrap`: integer assigned to the given resampling. Possible values are those in `.bootstraps`.
 \item `knn`: number of nearest neighbors used as input parameters to `FindNeighbors`. Possible values are those in `.knns`.
 \item `resolution`: resolution for `FindClusters`. Possible values are those in `.resolutions`.
-\item `tot_sil_neg`:
-\item `lowest_sil_clust`:
-\item `sil_avg`:
-\item `sil_mean_median`:
+\item `tot_sil_neg`: negative silhouette score
+\item `lowest_sil_clust`: lowest silhouette
+\item `sil_avg`: average silhouette score
+\item `sil_mean_median`: mean of the median silhouette score
 \item `n_clust`: number of clusters resulting for the given combination of `knn`, `resolution` with cells sampled according to `bootstrap`.
 \item `random.seed`: random seed used to initialize the rng for cell subsamplings. Values are the same as `index`.
 }

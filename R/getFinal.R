@@ -238,8 +238,7 @@ getFinal <- function(S.obj,res=0.5,NN=15, assay="RNA", slot="scale.data", reduct
 
 
 
-    #require(factoextra)
-    #require(dplyr)
+
 
     plt.sil <- factoextra::fviz_silhouette(s)
 

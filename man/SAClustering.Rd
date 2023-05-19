@@ -88,7 +88,7 @@ algorithm stored in `Seurat_object[[assay]]@misc$SA.history`. The list contains 
 \item  `optim.value` optimal value of the objective function
 \item `trace.mat` matrix collecting the history of the algorithm, as produced by the GenSA package.
 \item `num.evaluations` number of times the objective function is evaluated
-\item `par.history` matrix collecting resolution, number of nearest neighbors, number of clusters and objective
+\item `par.history` matrix collecting resolution, number of nearest neighbors, number of clusters and objective function at each function call
 }
 }
 \description{
