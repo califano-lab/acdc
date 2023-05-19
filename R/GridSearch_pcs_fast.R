@@ -19,11 +19,17 @@
 #' @param .pct_cells percentage of cells sample at each bootstrap iteration. All cells are used by default.
 #' @param .replace: (logical) whether to sample cells with (TRUE) or without replacement (FALSE). Default=FALSE.
 #' @param .clust_alg clustering algorithm. Choose among: "Louvain" (default); "Louvain-mult-ref"; "SLM"; "Leiden".
+#' @param type.fun Objective function to be optimized when computing optimal solution. Options include: `"mean.silhouette"` = mean
+#' silhouette computed over all cells in the dataset (default); `"median.silhouette"` = median silhouette computed over all cells in
+#' the dataset. `"group.mean.silhouette"` = mean of the per-group average silhouettes. `"group.median.silhouette"` = mean of the
+#' per-group median silhouettes. `"generalized.logistic"` = mean of the transformed-silhouette computed using a generalized logistic
 #' @param free_cores number of cores that are not used for the calculation. Default=2.
 #' @param my_seed random seed for FindClusters. Default=0.
 #' @param weights unitary (unitary) or exponential (exp) way of weighing the silhouette scores. Default=unitary.
 #'
-#' @return A 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters.
+#' @return Returns an object of class Seurat with the with optimal clustering solution stored in the metadata `seurat_clusters`, the
+#' corresponding `silhouette` object stored in `Seurat_object[[assay]]@misc$sil` and a tibble containing  the history of the optimization
+#' algorithm stored in `Seurat_object[[assay]]@misc$GS.history`. The 11-columns tibble containing the outcomes of the calculation for choosing the optimal number of clusters.
 #' Columns consist of the following vectors.
 #' \itemize{
 #' \item `index`: integer in the interval 1-`n_idx`, where `n_idx`=`length(.bootstrap)*length(.knns)`
@@ -52,6 +58,7 @@ GridSearch_pcs_fast <- function(object,
                                 .pct_cells = 100,
                                 .replace = FALSE,
                                 .clust_alg = "Louvain",
+                                type.fun = "group.mean.silhouette",
                                 free.cores = 2,
                                 .type = "genes",
                                 .dims = NULL,
@@ -335,6 +342,43 @@ GridSearch_pcs_fast <- function(object,
 
 
     my_sil.df <- result
-    return(my_sil.df)
+    # return(my_sil.df)
   }
+  opt_params <- my_sil.df %>%
+    filter(sil_avg == max(sil_avg, na.rm = TRUE)) %>%
+    select(knn, resolution) %>%
+    slice_head()
+  opt_params$knn
+  opt_params$resolution
+
+  object <- getFinal(
+    object,
+    res = opt_params$resolution,
+    NN = opt_params$knn,
+    assay = assay.name,
+    slot = "scale.data",
+    reduction = .type=="PCA",
+    reduction.slot = "pca",
+    num.pcs = max(.dims),
+    verbose = FALSE,
+    clust.alg = .clust_alg,
+    type.fun = "group.mean.silhouette",
+    weights = weights,
+    exp_base = exp_base,
+    rng.seed = my_seed,
+    object.dist = object.dist
+  )
+
+  Seurat::Idents(object) <- "seurat_clusters"
+  # if(verbose){
+  #   s <- cluster::silhouette( as.integer(object$seurat_clusters), object.dist)
+  #   if (weights=="exp"){
+  #     neg.sil <- (s[,"sil_width"] < 0)
+  #     s[neg.sil,"sil_width"] <- -1*(exp_base^abs(s[neg.sil,"sil_width"]))
+  #   }
+  #   plt.sil <- factoextra::fviz_silhouette(s)
+  #   print(plt.sil)
+  # }
+  object[[assay.name]]@misc$GS.history <- my_sil.df
+  return(object)
 }

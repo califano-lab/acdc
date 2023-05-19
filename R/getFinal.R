@@ -248,6 +248,10 @@ getFinal <- function(
   if ( nlevels(S.obj$seurat_clusters) > 1 ) {
 
     s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
+    if (weights=="exp"){
+      neg.sil <- (s[,"sil_width"] < 0)
+      s[neg.sil,"sil_width"] <- -1*(exp_base^abs(s[neg.sil,"sil_width"]))
+    }
 
 
     # sil_neg <- sapply( unique(s[,"cluster"]),

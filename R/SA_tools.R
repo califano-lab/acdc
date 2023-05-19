@@ -363,10 +363,13 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
      # Displays silhouette plot
 
      s <- cluster::silhouette( as.integer(S.obj$seurat_clusters), d)
+     if (weights=="exp"){
+       neg.sil <- (s[,"sil_width"] < 0)
+       s[neg.sil,"sil_width"] <- -1*(exp_base^abs(s[neg.sil,"sil_width"]))
+     }
 
-
-     sil_neg <- sapply( unique(s[,"cluster"]),
-                        function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
+     # sil_neg <- sapply( unique(s[,"cluster"]),
+     #                    function(i) { sum( s[s[,1]==i, "sil_width"] < lq ) / nrow( s[s[,1]==i,] ) } )
 
 
 
@@ -379,11 +382,11 @@ SAClustering <- function(S.obj,res.range=c(0.01,2),NN.range=c(3,30), par.init=NU
 
       switch(verbose, "TRUE"={print(plt.sil)})
 
-      plt.sil <- plt.sil$data %>%
-        group_by(cluster) %>%
-        summarise(size = n(),
-                  ave.sil.width=round(mean(sil_width), 2)) %>%
-          as.data.frame()
+      # plt.sil <- plt.sil$data %>%
+      #   group_by(cluster) %>%
+      #   summarise(size = n(),
+      #             ave.sil.width=round(mean(sil_width), 2)) %>%
+      #     as.data.frame()
 
 
       S.obj[[assay]]@misc$SA.history <- clustering.optimization
