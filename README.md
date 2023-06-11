@@ -110,7 +110,7 @@ The default objective function, `type.fun`, in the previous example is the mean 
 
 # Contacts
 
-Please contact Alexander Wang, Luca Zanella or Alessandro Vasciaveo for doubts regarding this project (please remember that this project is still under development!).  
+Please contact Alexander Wang, Luca Zanella or Alessandro Vasciaveo for information regarding this project (please remember that this project is still under development!).  
 
 Alexander Wang - aw3436@cumc.columbia.edu  
 
